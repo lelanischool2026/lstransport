@@ -106,9 +106,7 @@ export default function DashboardPage() {
           id: string;
           active: boolean;
         }[];
-        const activeLearners = learners.filter(
-          (l) => l.active,
-        ).length;
+        const activeLearners = learners.filter((l) => l.active).length;
 
         setStats({
           totalLearners: learners.length,

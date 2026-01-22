@@ -130,9 +130,7 @@ export default function ReportsPage() {
       filtered = filtered.filter((l) => l.active);
     }
     if (config.tripFilter) {
-      filtered = filtered.filter(
-        (l) => l.trip === parseInt(config.tripFilter),
-      );
+      filtered = filtered.filter((l) => l.trip === parseInt(config.tripFilter));
     }
     if (config.pickupAreaFilter) {
       filtered = filtered.filter(
@@ -149,9 +147,7 @@ export default function ReportsPage() {
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
       case "class":
-        filtered.sort((a, b) =>
-          (a.class || "").localeCompare(b.class || ""),
-        );
+        filtered.sort((a, b) => (a.class || "").localeCompare(b.class || ""));
         break;
       case "pickup_area":
         filtered.sort((a, b) =>

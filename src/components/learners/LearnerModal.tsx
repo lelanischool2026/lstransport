@@ -77,7 +77,8 @@ export default function LearnerModal({
     const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]:
+        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -103,15 +104,24 @@ export default function LearnerModal({
 
     // Validate phones if provided
     if (formData.father_phone && !validatePhone(formData.father_phone)) {
-      toast.error("Father's phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
+      toast.error(
+        "Father's phone must be in format +254XXXXXXXXX or 07XXXXXXXX",
+      );
       return;
     }
     if (formData.mother_phone && !validatePhone(formData.mother_phone)) {
-      toast.error("Mother's phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
+      toast.error(
+        "Mother's phone must be in format +254XXXXXXXXX or 07XXXXXXXX",
+      );
       return;
     }
-    if (formData.house_help_phone && !validatePhone(formData.house_help_phone)) {
-      toast.error("House help phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
+    if (
+      formData.house_help_phone &&
+      !validatePhone(formData.house_help_phone)
+    ) {
+      toast.error(
+        "House help phone must be in format +254XXXXXXXXX or 07XXXXXXXX",
+      );
       return;
     }
 
@@ -268,7 +278,12 @@ export default function LearnerModal({
                 <select
                   name="trip"
                   value={formData.trip}
-                  onChange={(e) => setFormData(prev => ({ ...prev, trip: parseInt(e.target.value) }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      trip: parseInt(e.target.value),
+                    }))
+                  }
                   className="form-input"
                 >
                   {TRIPS.map((trip) => (
@@ -282,7 +297,9 @@ export default function LearnerModal({
 
             {/* Pickup Info */}
             <div className="border-t border-dark-700 pt-4">
-              <h3 className="text-sm font-medium text-gray-400 mb-3">Pickup Information</h3>
+              <h3 className="text-sm font-medium text-gray-400 mb-3">
+                Pickup Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="form-label">Pickup Area</label>
@@ -316,7 +333,9 @@ export default function LearnerModal({
 
             {/* Dropoff Info */}
             <div className="border-t border-dark-700 pt-4">
-              <h3 className="text-sm font-medium text-gray-400 mb-3">Drop-off Information</h3>
+              <h3 className="text-sm font-medium text-gray-400 mb-3">
+                Drop-off Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="form-group">
                   <label className="form-label">Drop-off Area</label>
@@ -350,7 +369,9 @@ export default function LearnerModal({
 
             {/* Contact Info */}
             <div className="border-t border-dark-700 pt-4">
-              <h3 className="text-sm font-medium text-gray-400 mb-3">Contact Information</h3>
+              <h3 className="text-sm font-medium text-gray-400 mb-3">
+                Contact Information
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="form-group">
                   <label className="form-label">Father&apos;s Phone</label>

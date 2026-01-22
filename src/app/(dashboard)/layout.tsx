@@ -39,12 +39,16 @@ export default function DashboardLayout({
       } = await supabase.auth.getUser();
 
       if (user) {
-        const { data: driverData } = await supabase
+        console.log("Auth user ID:", user.id);
+        const { data: driverData, error } = await supabase
           .from("drivers")
           .select("*")
           .eq("user_id", user.id)
           .single();
 
+        console.log("Driver data:", driverData);
+        console.log("Driver error:", error);
+        console.log("Is admin?", driverData?.role === "admin");
         setDriver(driverData);
       }
     } catch (error) {

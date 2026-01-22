@@ -140,9 +140,15 @@ export default function LearnersPage() {
     if (
       searchTerm &&
       !learner.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !(learner.admission_no?.toLowerCase() || "").includes(searchTerm.toLowerCase()) &&
-      !(learner.class?.toLowerCase() || "").includes(searchTerm.toLowerCase()) &&
-      !(learner.pickup_area?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+      !(learner.admission_no?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase(),
+      ) &&
+      !(learner.class?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase(),
+      ) &&
+      !(learner.pickup_area?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase(),
+      )
     ) {
       return false;
     }
@@ -246,7 +252,9 @@ export default function LearnersPage() {
           </select>
           <select
             value={tripFilter}
-            onChange={(e) => setTripFilter(e.target.value as "" | "1" | "2" | "3")}
+            onChange={(e) =>
+              setTripFilter(e.target.value as "" | "1" | "2" | "3")
+            }
             className="form-input"
           >
             <option value="">All Trips</option>
@@ -264,7 +272,11 @@ export default function LearnersPage() {
             <div className="text-6xl mb-4">📚</div>
             <h3 className="text-xl font-semibold mb-2">No learners found</h3>
             <p className="text-gray-400 mb-4">
-              {searchTerm || routeFilter || statusFilter || classFilter || tripFilter
+              {searchTerm ||
+              routeFilter ||
+              statusFilter ||
+              classFilter ||
+              tripFilter
                 ? "Try adjusting your filters"
                 : "Start by adding your first learner to the system."}
             </p>
@@ -315,7 +327,9 @@ export default function LearnersPage() {
                         >
                           {learner.father_phone}
                         </a>
-                      ) : "-"}
+                      ) : (
+                        "-"
+                      )}
                     </td>
                     <td>
                       {learner.mother_phone ? (
@@ -325,7 +339,9 @@ export default function LearnersPage() {
                         >
                           {learner.mother_phone}
                         </a>
-                      ) : "-"}
+                      ) : (
+                        "-"
+                      )}
                     </td>
                     <td>{getRouteName(learner.route_id)}</td>
                     <td>
