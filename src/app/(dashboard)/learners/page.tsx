@@ -198,18 +198,16 @@ export default function LearnersPage() {
   });
 
   // Check if user can edit a learner
+  // All drivers can edit any learner (matching original behavior)
   const canEdit = useCallback(
-    (learner: Learner) => {
-      if (!driver) return false;
-      if (driver.role === "admin") return true;
-      // Drivers can edit learners on their route OR if they don't have a route assigned yet
-      if (!driver.route_id) return false;
-      return learner.route_id === driver.route_id;
+    () => {
+      // Any logged-in driver can edit any learner
+      return !!driver;
     },
     [driver],
   );
 
-  // Check if user is admin for transfer functionality
+  // Check if user is admin
   const isAdmin = driver?.role === "admin";
 
   // Get route name by ID
@@ -393,7 +391,7 @@ export default function LearnersPage() {
                     </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        {canEdit(learner) && (
+                        {canEdit() && (
                           <>
                             <button
                               onClick={() => handleEditLearner(learner)}
@@ -401,6 +399,13 @@ export default function LearnersPage() {
                               title="Edit"
                             >
                               ✏️
+                            </button>
+                            <button
+                              onClick={() => handleTransferLearner(learner)}
+                              className="p-1.5 text-purple-400 hover:bg-purple-400/10 rounded"
+                              title="Transfer to another route"
+                            >
+                              🔄
                             </button>
                             {learner.active ? (
                               <button
@@ -417,15 +422,6 @@ export default function LearnersPage() {
                                 title="Reactivate"
                               >
                                 ♻️
-                              </button>
-                            )}
-                            {isAdmin && (
-                              <button
-                                onClick={() => handleTransferLearner(learner)}
-                                className="p-1.5 text-purple-400 hover:bg-purple-400/10 rounded"
-                                title="Transfer to another route"
-                              >
-                                🔄
                               </button>
                             )}
                           </>
