@@ -19,9 +19,7 @@ export default function LearnersPage() {
   const [routeFilter, setRouteFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [classFilter, setClassFilter] = useState("");
-  const [tripFilter, setTripFilter] = useState<
-    "" | "morning" | "afternoon" | "both"
-  >("");
+  const [tripFilter, setTripFilter] = useState<"" | "1" | "2" | "3">("");
 
   useEffect(() => {
     loadData();
@@ -90,7 +88,7 @@ export default function LearnersPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from("learners")
-        .update({ status: "inactive" })
+        .update({ active: false })
         .eq("id", learner.id);
 
       if (error) throw error;
@@ -109,7 +107,7 @@ export default function LearnersPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from("learners")
-        .update({ status: "active" })
+        .update({ active: true })
         .eq("id", learner.id);
 
       if (error) throw error;
@@ -132,9 +130,9 @@ export default function LearnersPage() {
     loadData();
   };
 
-  // Get unique grades for filter
-  const uniqueGrades = [
-    ...new Set(learners.map((l) => l.grade).filter(Boolean)),
+  // Get unique classes for filter
+  const uniqueClasses = [
+    ...new Set(learners.map((l) => l.class).filter(Boolean)),
   ].sort();
 
   // Filter learners
@@ -142,22 +140,18 @@ export default function LearnersPage() {
     if (
       searchTerm &&
       !learner.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !(learner.grade?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase(),
-      ) &&
-      !(learner.guardian_name?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase(),
-      )
+      !(learner.admission_no?.toLowerCase() || "").includes(searchTerm.toLowerCase()) &&
+      !(learner.class?.toLowerCase() || "").includes(searchTerm.toLowerCase()) &&
+      !(learner.pickup_area?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     ) {
       return false;
     }
 
     if (routeFilter && learner.route_id !== routeFilter) return false;
-    if (statusFilter === "active" && learner.status !== "active") return false;
-    if (statusFilter === "inactive" && learner.status !== "inactive")
-      return false;
-    if (classFilter && learner.grade !== classFilter) return false;
-    if (tripFilter && learner.trip_type !== tripFilter) return false;
+    if (statusFilter === "active" && !learner.active) return false;
+    if (statusFilter === "inactive" && learner.active) return false;
+    if (classFilter && learner.class !== classFilter) return false;
+    if (tripFilter && learner.trip !== parseInt(tripFilter)) return false;
 
     return true;
   });
@@ -207,11 +201,11 @@ export default function LearnersPage() {
 
       {/* Filters */}
       <div className="card">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           <div className="lg:col-span-2">
             <input
               type="text"
-              placeholder="Search by name, admission number, or class..."
+              placeholder="Search by name, admission no, class, or area..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="form-input"
@@ -243,12 +237,22 @@ export default function LearnersPage() {
             onChange={(e) => setClassFilter(e.target.value)}
             className="form-input"
           >
-            <option value="">All Grades</option>
-            {uniqueGrades.map((grade) => (
-              <option key={grade} value={grade || ""}>
-                {grade}
+            <option value="">All Classes</option>
+            {uniqueClasses.map((cls) => (
+              <option key={cls} value={cls || ""}>
+                {cls}
               </option>
             ))}
+          </select>
+          <select
+            value={tripFilter}
+            onChange={(e) => setTripFilter(e.target.value as "" | "1" | "2" | "3")}
+            className="form-input"
+          >
+            <option value="">All Trips</option>
+            <option value="1">Trip 1</option>
+            <option value="2">Trip 2</option>
+            <option value="3">Trip 3</option>
           </select>
         </div>
       </div>
@@ -260,7 +264,7 @@ export default function LearnersPage() {
             <div className="text-6xl mb-4">📚</div>
             <h3 className="text-xl font-semibold mb-2">No learners found</h3>
             <p className="text-gray-400 mb-4">
-              {searchTerm || routeFilter || statusFilter || classFilter
+              {searchTerm || routeFilter || statusFilter || classFilter || tripFilter
                 ? "Try adjusting your filters"
                 : "Start by adding your first learner to the system."}
             </p>
@@ -274,11 +278,15 @@ export default function LearnersPage() {
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Grade</th>
+                  <th>Adm No</th>
+                  <th>Class</th>
                   <th>Trip</th>
-                  <th>Area</th>
-                  <th>Guardian</th>
-                  <th>Phone</th>
+                  <th>Pickup Area</th>
+                  <th>Pickup Time</th>
+                  <th>Drop Area</th>
+                  <th>Drop Time</th>
+                  <th>Father</th>
+                  <th>Mother</th>
                   <th>Route</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -288,28 +296,43 @@ export default function LearnersPage() {
                 {filteredLearners.map((learner) => (
                   <tr key={learner.id}>
                     <td className="font-medium">{learner.name}</td>
-                    <td>{learner.grade || "-"}</td>
+                    <td>{learner.admission_no || "-"}</td>
+                    <td>{learner.class || "-"}</td>
                     <td>
-                      <span className="badge badge-info capitalize">
-                        {learner.trip_type}
+                      <span className="badge badge-info">
+                        Trip {learner.trip || 1}
                       </span>
                     </td>
-                    <td>{learner.area || "-"}</td>
-                    <td>{learner.guardian_name || "-"}</td>
+                    <td>{learner.pickup_area || "-"}</td>
+                    <td>{learner.pickup_time || "-"}</td>
+                    <td>{learner.dropoff_area || "-"}</td>
+                    <td>{learner.drop_time || "-"}</td>
                     <td>
-                      <a
-                        href={`tel:${learner.guardian_phone}`}
-                        className="text-primary-400 hover:underline"
-                      >
-                        {learner.guardian_phone}
-                      </a>
+                      {learner.father_phone ? (
+                        <a
+                          href={`tel:${learner.father_phone}`}
+                          className="text-primary-400 hover:underline"
+                        >
+                          {learner.father_phone}
+                        </a>
+                      ) : "-"}
+                    </td>
+                    <td>
+                      {learner.mother_phone ? (
+                        <a
+                          href={`tel:${learner.mother_phone}`}
+                          className="text-primary-400 hover:underline"
+                        >
+                          {learner.mother_phone}
+                        </a>
+                      ) : "-"}
                     </td>
                     <td>{getRouteName(learner.route_id)}</td>
                     <td>
                       <span
-                        className={`badge ${learner.status === "active" ? "badge-success" : "badge-danger"}`}
+                        className={`badge ${learner.active ? "badge-success" : "badge-danger"}`}
                       >
-                        {learner.status === "active" ? "Active" : "Inactive"}
+                        {learner.active ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td>
@@ -323,7 +346,7 @@ export default function LearnersPage() {
                             >
                               ✏️
                             </button>
-                            {learner.status === "active" ? (
+                            {learner.active ? (
                               <button
                                 onClick={() => handleDeleteLearner(learner)}
                                 className="p-1.5 text-red-400 hover:bg-red-400/10 rounded"

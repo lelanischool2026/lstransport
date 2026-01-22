@@ -6,12 +6,17 @@ interface ExcelConfig {
   learners: Learner[];
   columns: {
     name: boolean;
-    grade: boolean;
-    trip_type: boolean;
-    area: boolean;
-    guardian_name: boolean;
-    guardian_phone: boolean;
-    status: boolean;
+    admission_no: boolean;
+    class: boolean;
+    trip: boolean;
+    pickup_area: boolean;
+    pickup_time: boolean;
+    dropoff_area: boolean;
+    drop_time: boolean;
+    father_phone: boolean;
+    mother_phone: boolean;
+    house_help_phone: boolean;
+    active: boolean;
   };
 }
 
@@ -31,12 +36,17 @@ export async function generateExcel(config: ExcelConfig) {
   // Build headers
   const headers: string[] = ["#"];
   if (columns.name) headers.push("Name");
-  if (columns.grade) headers.push("Grade");
-  if (columns.trip_type) headers.push("Trip Type");
-  if (columns.area) headers.push("Area");
-  if (columns.guardian_name) headers.push("Guardian Name");
-  if (columns.guardian_phone) headers.push("Guardian Phone");
-  if (columns.status) headers.push("Status");
+  if (columns.admission_no) headers.push("Adm No");
+  if (columns.class) headers.push("Class");
+  if (columns.trip) headers.push("Trip");
+  if (columns.pickup_area) headers.push("Pickup Area");
+  if (columns.pickup_time) headers.push("Pickup Time");
+  if (columns.dropoff_area) headers.push("Drop Area");
+  if (columns.drop_time) headers.push("Drop Time");
+  if (columns.father_phone) headers.push("Father");
+  if (columns.mother_phone) headers.push("Mother");
+  if (columns.house_help_phone) headers.push("House Help");
+  if (columns.active) headers.push("Status");
 
   // Title row
   worksheet.mergeCells(1, 1, 1, headers.length);
@@ -71,12 +81,17 @@ export async function generateExcel(config: ExcelConfig) {
   learners.forEach((learner, index) => {
     const rowData: (string | number)[] = [index + 1];
     if (columns.name) rowData.push(learner.name);
-    if (columns.grade) rowData.push(learner.grade || "-");
-    if (columns.trip_type) rowData.push(learner.trip_type);
-    if (columns.area) rowData.push(learner.area || "-");
-    if (columns.guardian_name) rowData.push(learner.guardian_name || "-");
-    if (columns.guardian_phone) rowData.push(learner.guardian_phone);
-    if (columns.status) rowData.push(learner.status);
+    if (columns.admission_no) rowData.push(learner.admission_no || "-");
+    if (columns.class) rowData.push(learner.class || "-");
+    if (columns.trip) rowData.push(`Trip ${learner.trip || 1}`);
+    if (columns.pickup_area) rowData.push(learner.pickup_area || "-");
+    if (columns.pickup_time) rowData.push(learner.pickup_time || "-");
+    if (columns.dropoff_area) rowData.push(learner.dropoff_area || "-");
+    if (columns.drop_time) rowData.push(learner.drop_time || "-");
+    if (columns.father_phone) rowData.push(learner.father_phone || "-");
+    if (columns.mother_phone) rowData.push(learner.mother_phone || "-");
+    if (columns.house_help_phone) rowData.push(learner.house_help_phone || "-");
+    if (columns.active) rowData.push(learner.active ? "Active" : "Inactive");
 
     const dataRow = worksheet.getRow(5 + index);
     dataRow.values = rowData;

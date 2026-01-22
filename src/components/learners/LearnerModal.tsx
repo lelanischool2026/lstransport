@@ -28,11 +28,11 @@ const GRADES = [
   "Grade 9",
 ];
 
-const TRIP_TYPES = [
-  { value: "both", label: "Both (Morning & Afternoon)" },
-  { value: "morning", label: "Morning Only" },
-  { value: "afternoon", label: "Afternoon Only" },
-] as const;
+const TRIPS = [
+  { value: 1, label: "Trip 1" },
+  { value: 2, label: "Trip 2" },
+  { value: 3, label: "Trip 3" },
+];
 
 export default function LearnerModal({
   learner,
@@ -47,14 +47,18 @@ export default function LearnerModal({
 
   const [formData, setFormData] = useState({
     name: learner?.name || "",
-    grade: learner?.grade || "",
-    guardian_name: learner?.guardian_name || "",
-    guardian_phone: learner?.guardian_phone || "",
-    area: learner?.area || "",
+    admission_no: learner?.admission_no || "",
+    class: learner?.class || "",
+    pickup_area: learner?.pickup_area || "",
+    pickup_time: learner?.pickup_time || "",
+    dropoff_area: learner?.dropoff_area || "",
+    drop_time: learner?.drop_time || "",
+    father_phone: learner?.father_phone || "",
+    mother_phone: learner?.mother_phone || "",
+    house_help_phone: learner?.house_help_phone || "",
     route_id: learner?.route_id || driver?.route_id || "",
-    trip_type:
-      learner?.trip_type || ("both" as "morning" | "afternoon" | "both"),
-    status: learner?.status || ("active" as "active" | "inactive"),
+    trip: learner?.trip || 1,
+    active: learner?.active ?? true,
   });
 
   // Load areas when route changes
@@ -70,15 +74,15 @@ export default function LearnerModal({
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
   const validatePhone = (phone: string) => {
-    // Allow various formats: +254..., 07..., 01...
+    if (!phone) return true; // Optional phones are allowed to be empty
     const phoneRegex = /^(\+254|0)[0-9]{9}$/;
     return phoneRegex.test(phone);
   };
@@ -92,18 +96,22 @@ export default function LearnerModal({
       return;
     }
 
-    if (!formData.guardian_phone.trim()) {
-      toast.error("Guardian phone is required");
-      return;
-    }
-
-    if (!validatePhone(formData.guardian_phone)) {
-      toast.error("Phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
-      return;
-    }
-
     if (!formData.route_id) {
       toast.error("Please select a route");
+      return;
+    }
+
+    // Validate phones if provided
+    if (formData.father_phone && !validatePhone(formData.father_phone)) {
+      toast.error("Father's phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
+      return;
+    }
+    if (formData.mother_phone && !validatePhone(formData.mother_phone)) {
+      toast.error("Mother's phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
+      return;
+    }
+    if (formData.house_help_phone && !validatePhone(formData.house_help_phone)) {
+      toast.error("House help phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
       return;
     }
 
@@ -114,13 +122,18 @@ export default function LearnerModal({
 
       const learnerData: LearnerInsert = {
         name: formData.name.trim(),
-        grade: formData.grade || null,
-        guardian_name: formData.guardian_name.trim() || null,
-        guardian_phone: formData.guardian_phone.trim(),
-        area: formData.area || null,
+        admission_no: formData.admission_no.trim() || null,
+        class: formData.class || null,
+        pickup_area: formData.pickup_area || null,
+        pickup_time: formData.pickup_time || null,
+        dropoff_area: formData.dropoff_area || null,
+        drop_time: formData.drop_time || null,
+        father_phone: formData.father_phone.trim() || null,
+        mother_phone: formData.mother_phone.trim() || null,
+        house_help_phone: formData.house_help_phone.trim() || null,
         route_id: formData.route_id || null,
-        trip_type: formData.trip_type,
-        status: formData.status,
+        trip: formData.trip,
+        active: formData.active,
       };
 
       if (isEditing && learner) {
@@ -148,7 +161,7 @@ export default function LearnerModal({
 
       const err = error as { code?: string; message?: string };
       if (err.code === "23505") {
-        toast.error("A learner with this information already exists");
+        toast.error("A learner with this admission number already exists");
       } else {
         toast.error(err.message || "Failed to save learner");
       }
@@ -166,7 +179,7 @@ export default function LearnerModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-content max-w-2xl"
+        className="modal-content max-w-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -180,33 +193,47 @@ export default function LearnerModal({
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body space-y-6">
-            {/* Name */}
-            <div className="form-group">
-              <label className="form-label">
-                Learner Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                placeholder="Enter full name"
-                className="form-input"
-              />
+            {/* Basic Info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="form-group md:col-span-2">
+                <label className="form-label">
+                  Learner Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter full name"
+                  className="form-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Admission No</label>
+                <input
+                  type="text"
+                  name="admission_no"
+                  value={formData.admission_no}
+                  onChange={handleChange}
+                  placeholder="e.g. 20203"
+                  className="form-input"
+                />
+              </div>
             </div>
 
-            {/* Grade and Route */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Class, Route, Trip */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="form-group">
-                <label className="form-label">Grade/Class</label>
+                <label className="form-label">Class/Grade</label>
                 <select
-                  name="grade"
-                  value={formData.grade}
+                  name="class"
+                  value={formData.class}
                   onChange={handleChange}
                   className="form-input"
                 >
-                  <option value="">Select grade</option>
+                  <option value="">Select class</option>
                   {GRADES.map((grade) => (
                     <option key={grade} value={grade}>
                       {grade}
@@ -235,90 +262,150 @@ export default function LearnerModal({
                   ))}
                 </select>
               </div>
-            </div>
-
-            {/* Area and Trip Type */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Pickup Area</label>
-                <select
-                  name="area"
-                  value={formData.area}
-                  onChange={handleChange}
-                  className="form-input"
-                >
-                  <option value="">Select area</option>
-                  {areas.map((area) => (
-                    <option key={area} value={area}>
-                      {area}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
               <div className="form-group">
-                <label className="form-label">Trip Type</label>
+                <label className="form-label">Trip</label>
                 <select
-                  name="trip_type"
-                  value={formData.trip_type}
-                  onChange={handleChange}
+                  name="trip"
+                  value={formData.trip}
+                  onChange={(e) => setFormData(prev => ({ ...prev, trip: parseInt(e.target.value) }))}
                   className="form-input"
                 >
-                  {TRIP_TYPES.map((type) => (
-                    <option key={type.value} value={type.value}>
-                      {type.label}
+                  {TRIPS.map((trip) => (
+                    <option key={trip.value} value={trip.value}>
+                      {trip.label}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Guardian Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Guardian Name</label>
-                <input
-                  type="text"
-                  name="guardian_name"
-                  value={formData.guardian_name}
-                  onChange={handleChange}
-                  placeholder="Parent/Guardian name"
-                  className="form-input"
-                />
-              </div>
+            {/* Pickup Info */}
+            <div className="border-t border-dark-700 pt-4">
+              <h3 className="text-sm font-medium text-gray-400 mb-3">Pickup Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label className="form-label">Pickup Area</label>
+                  <select
+                    name="pickup_area"
+                    value={formData.pickup_area}
+                    onChange={handleChange}
+                    className="form-input"
+                  >
+                    <option value="">Select pickup area</option>
+                    {areas.map((area) => (
+                      <option key={area} value={area}>
+                        {area}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div className="form-group">
-                <label className="form-label">
-                  Guardian Phone <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  name="guardian_phone"
-                  value={formData.guardian_phone}
-                  onChange={handleChange}
-                  required
-                  placeholder="+254712345678"
-                  className="form-input"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Format: +254XXXXXXXXX or 07XXXXXXXX
-                </p>
+                <div className="form-group">
+                  <label className="form-label">Pickup Time</label>
+                  <input
+                    type="time"
+                    name="pickup_time"
+                    value={formData.pickup_time}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                </div>
               </div>
+            </div>
+
+            {/* Dropoff Info */}
+            <div className="border-t border-dark-700 pt-4">
+              <h3 className="text-sm font-medium text-gray-400 mb-3">Drop-off Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="form-group">
+                  <label className="form-label">Drop-off Area</label>
+                  <select
+                    name="dropoff_area"
+                    value={formData.dropoff_area}
+                    onChange={handleChange}
+                    className="form-input"
+                  >
+                    <option value="">Select drop-off area</option>
+                    {areas.map((area) => (
+                      <option key={area} value={area}>
+                        {area}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Drop-off Time</label>
+                  <input
+                    type="time"
+                    name="drop_time"
+                    value={formData.drop_time}
+                    onChange={handleChange}
+                    className="form-input"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Info */}
+            <div className="border-t border-dark-700 pt-4">
+              <h3 className="text-sm font-medium text-gray-400 mb-3">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="form-group">
+                  <label className="form-label">Father&apos;s Phone</label>
+                  <input
+                    type="tel"
+                    name="father_phone"
+                    value={formData.father_phone}
+                    onChange={handleChange}
+                    placeholder="+254712345678"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Mother&apos;s Phone</label>
+                  <input
+                    type="tel"
+                    name="mother_phone"
+                    value={formData.mother_phone}
+                    onChange={handleChange}
+                    placeholder="+254712345678"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">House Help Phone</label>
+                  <input
+                    type="tel"
+                    name="house_help_phone"
+                    value={formData.house_help_phone}
+                    onChange={handleChange}
+                    placeholder="+254712345678"
+                    className="form-input"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Format: +254XXXXXXXXX or 07XXXXXXXX
+              </p>
             </div>
 
             {/* Status (only for editing) */}
             {isEditing && (
-              <div className="form-group">
-                <label className="form-label">Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  className="form-input"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
+              <div className="border-t border-dark-700 pt-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="active"
+                    checked={formData.active}
+                    onChange={handleChange}
+                    className="w-5 h-5 rounded"
+                  />
+                  <span className="form-label mb-0">Active Learner</span>
+                </label>
               </div>
             )}
           </div>

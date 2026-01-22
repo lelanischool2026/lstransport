@@ -10,19 +10,24 @@ import { generateExcel } from "@/lib/reports/excel-generator";
 interface ReportConfig {
   routeId: string;
   format: "pdf" | "excel";
-  sortBy: "name" | "grade" | "area" | "trip";
+  sortBy: "name" | "class" | "pickup_area" | "trip";
   tripFilter: string;
   pickupAreaFilter: string;
   classFilter: string;
   includeInactive: boolean;
   columns: {
     name: boolean;
-    grade: boolean;
-    trip_type: boolean;
-    area: boolean;
-    guardian_name: boolean;
-    guardian_phone: boolean;
-    status: boolean;
+    admission_no: boolean;
+    class: boolean;
+    trip: boolean;
+    pickup_area: boolean;
+    pickup_time: boolean;
+    dropoff_area: boolean;
+    drop_time: boolean;
+    father_phone: boolean;
+    mother_phone: boolean;
+    house_help_phone: boolean;
+    active: boolean;
   };
 }
 
@@ -43,12 +48,17 @@ export default function ReportsPage() {
     includeInactive: false,
     columns: {
       name: true,
-      grade: true,
-      trip_type: true,
-      area: true,
-      guardian_name: true,
-      guardian_phone: true,
-      status: false,
+      admission_no: true,
+      class: true,
+      trip: true,
+      pickup_area: true,
+      pickup_time: false,
+      dropoff_area: false,
+      drop_time: false,
+      father_phone: true,
+      mother_phone: true,
+      house_help_phone: false,
+      active: false,
     },
   });
 
@@ -117,16 +127,20 @@ export default function ReportsPage() {
 
     // Apply filters
     if (!config.includeInactive) {
-      filtered = filtered.filter((l) => l.status === "active");
+      filtered = filtered.filter((l) => l.active);
     }
     if (config.tripFilter) {
-      filtered = filtered.filter((l) => l.trip_type === config.tripFilter);
+      filtered = filtered.filter(
+        (l) => l.trip === parseInt(config.tripFilter),
+      );
     }
     if (config.pickupAreaFilter) {
-      filtered = filtered.filter((l) => l.area === config.pickupAreaFilter);
+      filtered = filtered.filter(
+        (l) => l.pickup_area === config.pickupAreaFilter,
+      );
     }
     if (config.classFilter) {
-      filtered = filtered.filter((l) => l.grade === config.classFilter);
+      filtered = filtered.filter((l) => l.class === config.classFilter);
     }
 
     // Apply sorting
@@ -134,16 +148,18 @@ export default function ReportsPage() {
       case "name":
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
-      case "grade":
-        filtered.sort((a, b) => (a.grade || "").localeCompare(b.grade || ""));
+      case "class":
+        filtered.sort((a, b) =>
+          (a.class || "").localeCompare(b.class || ""),
+        );
         break;
-      case "area":
-        filtered.sort((a, b) => (a.area || "").localeCompare(b.area || ""));
+      case "pickup_area":
+        filtered.sort((a, b) =>
+          (a.pickup_area || "").localeCompare(b.pickup_area || ""),
+        );
         break;
       case "trip":
-        filtered.sort((a, b) =>
-          (a.trip_type || "").localeCompare(b.trip_type || ""),
-        );
+        filtered.sort((a, b) => (a.trip || 1) - (b.trip || 1));
         break;
       default:
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -196,10 +212,12 @@ export default function ReportsPage() {
 
   // Get unique values for filters
   const uniqueAreas = [
-    ...new Set(learners.map((l) => l.area).filter((a): a is string => !!a)),
+    ...new Set(
+      learners.map((l) => l.pickup_area).filter((a): a is string => !!a),
+    ),
   ].sort();
   const uniqueClasses = [
-    ...new Set(learners.map((l) => l.grade).filter((g): g is string => !!g)),
+    ...new Set(learners.map((l) => l.class).filter((g): g is string => !!g)),
   ].sort();
   const filteredCount = getFilteredLearners().length;
 
@@ -272,9 +290,9 @@ export default function ReportsPage() {
                 className="form-input"
               >
                 <option value="name">Learner Name</option>
-                <option value="grade">Grade</option>
-                <option value="area">Pickup Area</option>
-                <option value="trip">Trip Type</option>
+                <option value="class">Class</option>
+                <option value="pickup_area">Pickup Area</option>
+                <option value="trip">Trip</option>
               </select>
             </div>
           </div>
@@ -358,7 +376,7 @@ export default function ReportsPage() {
           <p className="text-gray-400 text-sm mb-4">
             Choose which information to show in the report
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <label className="flex items-center gap-2 cursor-not-allowed opacity-50">
               <input
                 type="checkbox"

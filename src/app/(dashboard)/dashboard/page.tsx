@@ -62,14 +62,14 @@ export default function DashboardPage() {
               .eq("status", "active"),
             supabase.from("drivers").select("id", { count: "exact" }),
             supabase.from("minders").select("id", { count: "exact" }),
-            supabase.from("learners").select("id, status", { count: "exact" }),
+            supabase.from("learners").select("id, active", { count: "exact" }),
           ]);
 
         const learnersData = learnersRes.data as
-          | { id: string; status: string }[]
+          | { id: string; active: boolean }[]
           | null;
         const activeLearners =
-          learnersData?.filter((l) => l.status === "active").length || 0;
+          learnersData?.filter((l) => l.active).length || 0;
 
         setStats({
           totalLearners: learnersRes.count || 0,
@@ -95,7 +95,7 @@ export default function DashboardPage() {
             .single(),
           supabase
             .from("learners")
-            .select("id, status")
+            .select("id, active")
             .eq("route_id", driverData.route_id),
         ]);
 
@@ -104,10 +104,10 @@ export default function DashboardPage() {
 
         const learners = (learnersRes.data || []) as {
           id: string;
-          status: string;
+          active: boolean;
         }[];
         const activeLearners = learners.filter(
-          (l) => l.status === "active",
+          (l) => l.active,
         ).length;
 
         setStats({
