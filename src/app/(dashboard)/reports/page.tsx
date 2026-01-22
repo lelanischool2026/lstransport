@@ -113,7 +113,7 @@ export default function ReportsPage() {
         ]);
 
       // Filter routes for drivers (not admins)
-      let availableRoutes = routesRes.data || [];
+      let availableRoutes: Route[] = (routesRes.data || []) as Route[];
       if (
         driverProfile &&
         driverProfile.role !== "admin" &&
