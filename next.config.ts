@@ -6,7 +6,7 @@ const withSerwist = withSerwistInit({
   swDest: "public/sw.js",
   cacheOnNavigation: true,
   reloadOnOnline: true,
-  disable: process.env.NODE_ENV === "development",
+  disable: process.env.NODE_ENV !== "production",
 });
 
 const nextConfig: NextConfig = {
@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Add empty turbopack config to silence the webpack warning
+  turbopack: {},
 };
 
 export default withSerwist(nextConfig);
