@@ -9,6 +9,8 @@ interface AreasTabProps {
   onUpdate: () => void;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function AreasTab({ onUpdate }: AreasTabProps) {
   const [areas, setAreas] = useState<Area[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -16,6 +18,7 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingArea, setEditingArea] = useState<Area | null>(null);
   const [selectedRoute, setSelectedRoute] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -58,6 +61,18 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
     selectedRoute === "all"
       ? areas
       : areas.filter((area) => area.route_id === selectedRoute);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAreas.length / ITEMS_PER_PAGE);
+  const paginatedAreas = filteredAreas.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedRoute]);
 
   const handleOpenModal = (area?: Area) => {
     if (area) {
@@ -274,7 +289,7 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
                   </td>
                 </tr>
               ) : (
-                filteredAreas.map((area, index) => (
+                paginatedAreas.map((area, index) => (
                   <tr key={area.id}>
                     <td>
                       <span className="inline-flex items-center justify-center w-6 h-6 bg-dark-700 rounded-full text-sm">
@@ -327,6 +342,46 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-dark-700">
+            <div className="text-sm text-gray-400">
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+              {Math.min(currentPage * ITEMS_PER_PAGE, filteredAreas.length)} of{" "}
+              {filteredAreas.length} areas
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 rounded bg-dark-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-dark-600"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1 rounded text-sm ${
+                    currentPage === page
+                      ? "bg-primary-600 text-white"
+                      : "bg-dark-700 hover:bg-dark-600"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 rounded bg-dark-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-dark-600"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Modal */}

@@ -20,30 +20,39 @@ import VehiclesTab from "@/components/admin/VehiclesTab";
 import AreasTab from "@/components/admin/AreasTab";
 import SchoolSettingsTab from "@/components/admin/SchoolSettingsTab";
 import ImportTab from "@/components/admin/ImportTab";
+import AnalyticsTab from "@/components/admin/AnalyticsTab";
+import GradesTab from "@/components/admin/GradesTab";
+import RolloverTab from "@/components/admin/RolloverTab";
 
 type TabType =
+  | "analytics"
   | "routes"
   | "drivers"
   | "minders"
   | "vehicles"
   | "areas"
   | "school"
-  | "import";
+  | "grades"
+  | "import"
+  | "rollover";
 
 const TABS: { id: TabType; label: string; icon: string }[] = [
+  { id: "analytics", label: "Analytics", icon: "📊" },
   { id: "school", label: "School Settings", icon: "🏫" },
   { id: "vehicles", label: "Vehicles", icon: "🚗" },
   { id: "routes", label: "Routes", icon: "🚌" },
   { id: "areas", label: "Areas", icon: "📍" },
   { id: "drivers", label: "Drivers", icon: "👨‍✈️" },
   { id: "minders", label: "Minders", icon: "👩‍🏫" },
+  { id: "grades", label: "Grades", icon: "📚" },
   { id: "import", label: "Import Data", icon: "📥" },
+  { id: "rollover", label: "Year-End Rollover", icon: "🔄" },
 ];
 
 export default function AdminPage() {
   const router = useRouter();
   const [driver, setDriver] = useState<Driver | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>("routes");
+  const [activeTab, setActiveTab] = useState<TabType>("analytics");
   const [loading, setLoading] = useState(true);
 
   // Stats
@@ -202,13 +211,16 @@ export default function AdminPage() {
 
       {/* Tab Content */}
       <div>
+        {activeTab === "analytics" && <AnalyticsTab onUpdate={loadStats} />}
         {activeTab === "routes" && <RoutesTab onUpdate={loadStats} />}
         {activeTab === "drivers" && <DriversTab onUpdate={loadStats} />}
         {activeTab === "minders" && <MindersTab onUpdate={loadStats} />}
         {activeTab === "vehicles" && <VehiclesTab onUpdate={loadStats} />}
         {activeTab === "areas" && <AreasTab onUpdate={loadStats} />}
         {activeTab === "school" && <SchoolSettingsTab onUpdate={loadStats} />}
+        {activeTab === "grades" && <GradesTab onUpdate={loadStats} />}
         {activeTab === "import" && <ImportTab onUpdate={loadStats} />}
+        {activeTab === "rollover" && <RolloverTab onUpdate={loadStats} />}
       </div>
     </div>
   );

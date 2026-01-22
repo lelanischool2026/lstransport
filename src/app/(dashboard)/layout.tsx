@@ -48,8 +48,8 @@ export default function DashboardLayout({
 
         console.log("Driver data:", driverData);
         console.log("Driver error:", error);
-        console.log("Is admin?", driverData?.role === "admin");
-        setDriver(driverData);
+        console.log("Is admin?", (driverData as Driver | null)?.role === "admin");
+        setDriver(driverData as Driver | null);
       }
     } catch (error) {
       console.error("Error loading driver profile:", error);

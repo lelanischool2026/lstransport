@@ -84,7 +84,8 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
   };
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+254[0-9]{9}$/;
+    // Accept format: 07XXXXXXXX or 01XXXXXXXX (10 digits starting with 0)
+    const phoneRegex = /^0[17][0-9]{8}$/;
     return phoneRegex.test(phone);
   };
 
@@ -97,7 +98,7 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
     }
 
     if (!validatePhone(formData.phone)) {
-      toast.error("Phone must be in format +254XXXXXXXXX");
+      toast.error("Phone must be in format 07XXXXXXXX (10 digits)");
       return;
     }
 
@@ -302,10 +303,12 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
                         phone: e.target.value,
                       }))
                     }
-                    placeholder="+254712345678"
+                    placeholder="0712345678"
                     className="form-input"
+                    maxLength={10}
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Format: 07XXXXXXXX</p>
                 </div>
 
                 <div className="form-group">
