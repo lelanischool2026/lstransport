@@ -72,13 +72,17 @@ export default function DashboardLayout({
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center gap-3">
-              <Image
-                src="/lslogo.webp"
-                alt="Lelani School"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
+              <div className="w-11 h-11 p-0.5 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl shadow-lg">
+                <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center overflow-hidden">
+                  <Image
+                    src="/lslogo.webp"
+                    alt="Lelani School"
+                    width={36}
+                    height={36}
+                    className="object-contain"
+                  />
+                </div>
+              </div>
               <span className="font-semibold text-lg hidden sm:block">
                 Lelani Transport
               </span>

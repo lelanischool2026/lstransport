@@ -111,15 +111,17 @@ export default function RegisterPage() {
     <div className="w-full max-w-md">
       {/* Logo & Branding */}
       <div className="text-center mb-6">
-        <div className="w-20 h-20 mx-auto mb-3 relative">
-          <Image
-            src="/lslogo.webp"
-            alt="Lelani School Logo"
-            width={80}
-            height={80}
-            className="rounded-full"
-            priority
-          />
+        <div className="w-24 h-24 mx-auto mb-3 relative p-1 bg-gradient-to-br from-white via-primary-100 to-white rounded-2xl shadow-xl shadow-black/20">
+          <div className="w-full h-full bg-white rounded-xl flex items-center justify-center overflow-hidden">
+            <Image
+              src="/lslogo.webp"
+              alt="Lelani School Logo"
+              width={80}
+              height={80}
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
         <h1 className="text-2xl font-bold text-white">Lelani School</h1>
         <p className="text-primary-100 text-sm">Transport Management System</p>

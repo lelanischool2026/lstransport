@@ -47,15 +47,17 @@ export default function LoginPage() {
     <div className="w-full max-w-md">
       {/* Logo & Branding */}
       <div className="text-center mb-8">
-        <div className="w-24 h-24 mx-auto mb-4 relative">
-          <Image
-            src="/lslogo.webp"
-            alt="Lelani School Logo"
-            width={96}
-            height={96}
-            className="rounded-full"
-            priority
-          />
+        <div className="w-28 h-28 mx-auto mb-4 relative p-1 bg-gradient-to-br from-white via-primary-100 to-white rounded-2xl shadow-xl shadow-black/20">
+          <div className="w-full h-full bg-white rounded-xl flex items-center justify-center overflow-hidden">
+            <Image
+              src="/lslogo.webp"
+              alt="Lelani School Logo"
+              width={96}
+              height={96}
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
         <h1 className="text-3xl font-bold text-white">Lelani School</h1>
         <p className="text-primary-100 mt-2">Transport Management System</p>
