@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import type { Route, Learner, SchoolSettings, Driver, Minder } from "@/types/database";
+import type {
+  Route,
+  Learner,
+  SchoolSettings,
+  Driver,
+  Minder,
+} from "@/types/database";
 import { generatePDF } from "@/lib/reports/pdf-generator";
 import { generateExcel } from "@/lib/reports/excel-generator";
 
@@ -37,7 +43,9 @@ export default function ReportsPage() {
   const [settings, setSettings] = useState<SchoolSettings | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [minders, setMinders] = useState<Minder[]>([]);
-  const [areas, setAreas] = useState<{ id: string; name: string; route_id: string }[]>([]);
+  const [areas, setAreas] = useState<
+    { id: string; name: string; route_id: string }[]
+  >([]);
   const [currentDriver, setCurrentDriver] = useState<Driver | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -75,8 +83,10 @@ export default function ReportsPage() {
       const supabase = getSupabaseClient();
 
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       // Get current driver profile
       let driverProfile: Driver | null = null;
       if (user) {
@@ -89,25 +99,32 @@ export default function ReportsPage() {
         setCurrentDriver(driverProfile);
       }
 
-      const [routesRes, settingsRes, driversRes, mindersRes, areasRes] = await Promise.all([
-        supabase
-          .from("routes")
-          .select("*")
-          .eq("status", "active")
-          .order("name"),
-        supabase.from("school_settings").select("*").single(),
-        supabase.from("drivers").select("*").order("name"),
-        supabase.from("minders").select("*").order("name"),
-        supabase.from("areas").select("*").order("name"),
-      ]);
+      const [routesRes, settingsRes, driversRes, mindersRes, areasRes] =
+        await Promise.all([
+          supabase
+            .from("routes")
+            .select("*")
+            .eq("status", "active")
+            .order("name"),
+          supabase.from("school_settings").select("*").single(),
+          supabase.from("drivers").select("*").order("name"),
+          supabase.from("minders").select("*").order("name"),
+          supabase.from("areas").select("*").order("name"),
+        ]);
 
       // Filter routes for drivers (not admins)
       let availableRoutes = routesRes.data || [];
-      if (driverProfile && driverProfile.role !== "admin" && driverProfile.route_id) {
-        availableRoutes = availableRoutes.filter((r: Route) => r.id === driverProfile.route_id);
+      if (
+        driverProfile &&
+        driverProfile.role !== "admin" &&
+        driverProfile.route_id
+      ) {
+        availableRoutes = availableRoutes.filter(
+          (r: Route) => r.id === driverProfile.route_id,
+        );
         // Auto-select the driver's route
         if (availableRoutes.length === 1) {
-          setConfig(prev => ({ ...prev, routeId: availableRoutes[0].id }));
+          setConfig((prev) => ({ ...prev, routeId: availableRoutes[0].id }));
         }
       }
 

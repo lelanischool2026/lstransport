@@ -298,6 +298,3 @@ export async function generatePDF(config: PDFConfig) {
   const fileName = `${route.name.replace(/\s+/g, "_")}_Route_Report_${date.replace(/\s+/g, "_")}.pdf`;
   doc.save(fileName);
 }
-  const fileName = `${route.name.replace(/\s+/g, "_")}_Transport_List_${date.replace(/\s+/g, "_")}.pdf`;
-  doc.save(fileName);
-}
