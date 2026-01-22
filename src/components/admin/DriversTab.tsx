@@ -94,18 +94,13 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name.trim() || !formData.email.trim()) {
-      toast.error("Name and email are required");
+    if (!editingDriver) {
+      toast.error("Cannot create drivers from admin panel. Drivers must self-register.");
       return;
     }
 
-    if (!validatePhone(formData.phone)) {
+    if (formData.phone && !validatePhone(formData.phone)) {
       toast.error("Phone must be in format +254XXXXXXXXX");
-      return;
-    }
-
-    if (!editingDriver && formData.password.length < 8) {
-      toast.error("Password must be at least 8 characters");
       return;
     }
 
@@ -114,57 +109,20 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
     try {
       const supabase = getSupabaseClient();
 
-      if (editingDriver) {
-        // Update existing driver
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase as any)
-          .from("drivers")
-          .update({
-            name: formData.name.trim(),
-            email: formData.email.trim(),
-            phone: formData.phone,
-            route_id: formData.route_id || null,
-            role: formData.role,
-            status: formData.status,
-          })
-          .eq("id", editingDriver.id);
+      // Update existing driver - assign route, role, and status
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from("drivers")
+        .update({
+          phone: formData.phone,
+          route_id: formData.route_id || null,
+          role: formData.role,
+          status: formData.status,
+        })
+        .eq("id", editingDriver.id);
 
-        if (error) throw error;
-        toast.success("Driver updated successfully");
-      } else {
-        // Create auth user first
-        const { data: authData, error: authError } = await supabase.auth.signUp(
-          {
-            email: formData.email.trim(),
-            password: formData.password,
-            options: {
-              data: {
-                name: formData.name.trim(),
-                phone: formData.phone,
-              },
-            },
-          },
-        );
-
-        if (authError) throw authError;
-
-        // Create driver record
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: driverError } = await (supabase as any)
-          .from("drivers")
-          .insert({
-            user_id: authData.user?.id,
-            name: formData.name.trim(),
-            email: formData.email.trim(),
-            phone: formData.phone,
-            route_id: formData.route_id || null,
-            role: formData.role,
-            status: formData.status,
-          });
-
-        if (driverError) throw driverError;
-        toast.success("Driver created successfully");
-      }
+      if (error) throw error;
+      toast.success("Driver updated successfully");
 
       handleCloseModal();
       loadData();
@@ -195,9 +153,7 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Manage Drivers</h3>
-        <button onClick={() => handleOpenModal()} className="btn btn-primary">
-          ➕ Add Driver
-        </button>
+        <p className="text-sm text-gray-400">Drivers self-register. Click Edit to assign routes.</p>
       </div>
 
       {/* Drivers Table */}
@@ -269,7 +225,7 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
           >
             <div className="modal-header">
               <h2 className="text-xl font-semibold">
-                {editingDriver ? "Edit Driver" : "Add Driver"}
+                Edit Driver - Assign Route & Role
               </h2>
               <button
                 onClick={handleCloseModal}
@@ -283,85 +239,40 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
               <div className="modal-body space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="form-group">
-                    <label className="form-label">
-                      Name <span className="text-red-500">*</span>
-                    </label>
+                    <label className="form-label">Name</label>
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
-                      }
-                      placeholder="Full name"
-                      className="form-input"
-                      required
+                      className="form-input bg-gray-800"
+                      disabled
                     />
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">
-                      Email <span className="text-red-500">*</span>
-                    </label>
+                    <label className="form-label">Email</label>
                     <input
                       type="email"
                       value={formData.email}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          email: e.target.value,
-                        }))
-                      }
-                      placeholder="driver@lelani.school"
-                      className="form-input"
-                      required
-                      disabled={!!editingDriver}
+                      className="form-input bg-gray-800"
+                      disabled
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="form-group">
-                    <label className="form-label">
-                      Phone <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          phone: e.target.value,
-                        }))
-                      }
-                      placeholder="+254712345678"
-                      className="form-input"
-                      required
-                    />
-                  </div>
-
-                  {!editingDriver && (
-                    <div className="form-group">
-                      <label className="form-label">
-                        Password <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="password"
-                        value={formData.password}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            password: e.target.value,
-                          }))
-                        }
-                        placeholder="Min 8 characters"
-                        className="form-input"
-                        required
-                      />
-                    </div>
-                  )}
+                <div className="form-group">
+                  <label className="form-label">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
+                    placeholder="+254712345678"
+                    className="form-input"
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">

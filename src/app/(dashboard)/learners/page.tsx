@@ -199,13 +199,10 @@ export default function LearnersPage() {
 
   // Check if user can edit a learner
   // All drivers can edit any learner (matching original behavior)
-  const canEdit = useCallback(
-    () => {
-      // Any logged-in driver can edit any learner
-      return !!driver;
-    },
-    [driver],
-  );
+  const canEdit = useCallback(() => {
+    // Any logged-in driver can edit any learner
+    return !!driver;
+  }, [driver]);
 
   // Check if user is admin
   const isAdmin = driver?.role === "admin";
