@@ -1,11 +1,14 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import type { Route, Learner, SchoolSettings } from "@/types/database";
+import type { Route, Learner, SchoolSettings, Driver, Minder } from "@/types/database";
 
 interface PDFConfig {
   route: Route;
   learners: Learner[];
   settings: SchoolSettings | null;
+  driver?: Driver | null;
+  minder?: Minder | null;
+  areas?: string[];
   columns: {
     name: boolean;
     admission_no: boolean;
@@ -23,9 +26,9 @@ interface PDFConfig {
 }
 
 export async function generatePDF(config: PDFConfig) {
-  const { route, learners, settings, columns } = config;
+  const { route, learners, settings, driver, minder, areas, columns } = config;
 
-  // Create PDF document
+  // Create PDF document - Landscape A4
   const doc = new jsPDF({
     orientation: "landscape",
     unit: "mm",
@@ -33,37 +36,165 @@ export async function generatePDF(config: PDFConfig) {
   });
 
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
   // Colors
-  const primaryColor: [number, number, number] = [211, 47, 47]; // Red
-  const headerBg: [number, number, number] = [30, 30, 30];
-  const textColor: [number, number, number] = [255, 255, 255];
+  const primaryRed: [number, number, number] = [211, 47, 47];
+  const darkGray: [number, number, number] = [50, 50, 50];
+  const lightGray: [number, number, number] = [120, 120, 120];
+  const white: [number, number, number] = [255, 255, 255];
+  const headerTableBg: [number, number, number] = [180, 40, 40];
 
-  // Header
-  doc.setFillColor(...primaryColor);
-  doc.rect(0, 0, pageWidth, 25, "F");
+  // ========================================
+  // HEADER SECTION (Red Banner)
+  // ========================================
+  const headerHeight = 35;
+  doc.setFillColor(...primaryRed);
+  doc.rect(0, 0, pageWidth, headerHeight, "F");
 
-  // School name
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18);
+  // Logo placeholder - white circle on left
+  doc.setFillColor(255, 255, 255);
+  doc.circle(20, headerHeight / 2, 12, "F");
+  doc.setFillColor(...primaryRed);
+  doc.setFontSize(8);
+  doc.setTextColor(...primaryRed);
+  doc.text("LS", 20, headerHeight / 2 + 1, { align: "center" });
+
+  // School Name - Large centered
+  doc.setTextColor(...white);
+  doc.setFontSize(26);
   doc.setFont("helvetica", "bold");
-  doc.text(settings?.school_name || "Lelani School", 10, 12);
+  doc.text(settings?.school_name?.toUpperCase() || "LELANI SCHOOL", pageWidth / 2, 13, { align: "center" });
 
-  // Route info
-  doc.setFontSize(12);
+  // Subtitle
+  doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text(`${route.name} - Transport List`, 10, 20);
+  doc.text("TRANSPORT MANAGEMENT SYSTEM", pageWidth / 2, 20, { align: "center" });
 
-  // Date
-  const date = new Date().toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-  doc.text(date, pageWidth - 10, 12, { align: "right" });
-  doc.text(`${route.term} ${route.year}`, pageWidth - 10, 20, {
-    align: "right",
-  });
+  // Report Title
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("ROUTE LEARNERS REPORT", pageWidth / 2, 29, { align: "center" });
+
+  // ========================================
+  // ROUTE INFO & PERSONNEL SECTION
+  // ========================================
+  const infoStartY = headerHeight + 8;
+  const halfWidth = (pageWidth - 30) / 2;
+
+  // Left Box - Route Information
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.rect(10, infoStartY, halfWidth, 36);
+
+  doc.setTextColor(...primaryRed);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("ROUTE INFORMATION", 14, infoStartY + 7);
+
+  doc.setTextColor(...darkGray);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+
+  const leftCol = 14;
+  const leftValCol = 48;
+  let infoY = infoStartY + 14;
+
+  doc.text("Route Name:", leftCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(route.name, leftValCol, infoY);
+
+  infoY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text("Vehicle Reg:", leftCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(route.vehicle_no || "-", leftValCol, infoY);
+
+  infoY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text("Term/Year:", leftCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(`${route.term}, ${route.year}`, leftValCol, infoY);
+
+  infoY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text("Total Learners:", leftCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(learners.length.toString(), leftValCol, infoY);
+
+  // Right Box - Personnel
+  const rightBoxX = 10 + halfWidth + 10;
+  doc.rect(rightBoxX, infoStartY, halfWidth, 36);
+
+  doc.setTextColor(...primaryRed);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("PERSONNEL", rightBoxX + 4, infoStartY + 7);
+
+  doc.setTextColor(...darkGray);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+
+  const rightCol = rightBoxX + 4;
+  const rightValCol = rightBoxX + 28;
+  infoY = infoStartY + 14;
+
+  doc.text("Driver:", rightCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(driver?.name || "-", rightValCol, infoY);
+
+  infoY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text("Phone:", rightCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(driver?.phone || "-", rightValCol, infoY);
+
+  infoY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text("Minder:", rightCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(minder?.name || "-", rightValCol, infoY);
+
+  infoY += 6;
+  doc.setFont("helvetica", "normal");
+  doc.text("Phone:", rightCol, infoY);
+  doc.setFont("helvetica", "bold");
+  doc.text(minder?.phone || "-", rightValCol, infoY);
+
+  // ========================================
+  // AREAS COVERED SECTION
+  // ========================================
+  const areasY = infoStartY + 42;
+  doc.setFillColor(250, 250, 250);
+  doc.rect(10, areasY, pageWidth - 20, 14, "F");
+  doc.setDrawColor(200, 200, 200);
+  doc.rect(10, areasY, pageWidth - 20, 14);
+
+  doc.setTextColor(...primaryRed);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("AREAS COVERED", 14, areasY + 5);
+
+  // Get unique pickup areas from learners or use provided areas
+  const uniqueAreas =
+    areas && areas.length > 0
+      ? areas
+      : [...new Set(learners.map((l) => l.pickup_area).filter(Boolean))];
+
+  doc.setTextColor(...darkGray);
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "bold");
+  doc.text(uniqueAreas.join("  •  ") || "No areas defined", 14, areasY + 11);
+
+  // ========================================
+  // LEARNERS LIST TABLE
+  // ========================================
+  const tableStartY = areasY + 20;
+
+  doc.setTextColor(...primaryRed);
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.text("LEARNERS LIST", 10, tableStartY - 3);
 
   // Build table columns
   const tableColumns: string[] = ["#"];
@@ -73,10 +204,10 @@ export async function generatePDF(config: PDFConfig) {
   if (columns.trip) tableColumns.push("Trip");
   if (columns.pickup_area) tableColumns.push("Pickup Area");
   if (columns.pickup_time) tableColumns.push("Pickup Time");
-  if (columns.dropoff_area) tableColumns.push("Drop Area");
-  if (columns.drop_time) tableColumns.push("Drop Time");
-  if (columns.father_phone) tableColumns.push("Father");
-  if (columns.mother_phone) tableColumns.push("Mother");
+  if (columns.dropoff_area) tableColumns.push("Dropoff Area");
+  if (columns.drop_time) tableColumns.push("Dropoff Time");
+  if (columns.father_phone) tableColumns.push("Father Phone");
+  if (columns.mother_phone) tableColumns.push("Mother Phone");
   if (columns.house_help_phone) tableColumns.push("House Help");
   if (columns.active) tableColumns.push("Status");
 
@@ -98,49 +229,75 @@ export async function generatePDF(config: PDFConfig) {
     return row;
   });
 
-  // Generate table
+  // Generate premium styled table
   autoTable(doc, {
     head: [tableColumns],
     body: tableData,
-    startY: 30,
+    startY: tableStartY,
     theme: "grid",
     styles: {
       fontSize: 8,
-      cellPadding: 2,
-      textColor: [50, 50, 50],
+      cellPadding: 2.5,
+      textColor: darkGray,
+      lineColor: [220, 220, 220],
+      lineWidth: 0.2,
     },
     headStyles: {
-      fillColor: headerBg,
-      textColor: textColor,
+      fillColor: headerTableBg,
+      textColor: white,
       fontStyle: "bold",
       halign: "center",
+      fontSize: 8,
+      cellPadding: 3,
     },
     alternateRowStyles: {
-      fillColor: [245, 245, 245],
+      fillColor: [252, 252, 252],
     },
     columnStyles: {
       0: { halign: "center", cellWidth: 8 },
     },
+    margin: { left: 10, right: 10 },
+    tableLineColor: [200, 200, 200],
+    tableLineWidth: 0.3,
   });
 
-  // Footer
+  // ========================================
+  // FOOTER
+  // ========================================
   const pageCount = doc.getNumberOfPages();
+  const date = new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    const pageHeight = doc.internal.pageSize.getHeight();
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
+
+    // Footer line
+    doc.setDrawColor(200, 200, 200);
+    doc.line(10, pageHeight - 12, pageWidth - 10, pageHeight - 12);
+
+    // Footer text
+    doc.setFontSize(7);
+    doc.setTextColor(...lightGray);
+    doc.setFont("helvetica", "normal");
     doc.text(
-      `Generated by ${settings?.school_name || "Lelani"} Transport System`,
+      `Generated by ${settings?.school_name || "Lelani School"} Transport Management System  •  ${date}`,
       10,
-      pageHeight - 5,
+      pageHeight - 7
     );
-    doc.text(`Page ${i} of ${pageCount}`, pageWidth - 10, pageHeight - 5, {
+    doc.text(`Page ${i} of ${pageCount}`, pageWidth - 10, pageHeight - 7, {
       align: "right",
     });
   }
 
-  // Save the PDF
+  // ========================================
+  // SAVE PDF
+  // ========================================
+  const fileName = `${route.name.replace(/\s+/g, "_")}_Route_Report_${date.replace(/\s+/g, "_")}.pdf`;
+  doc.save(fileName);
+}
   const fileName = `${route.name.replace(/\s+/g, "_")}_Transport_List_${date.replace(/\s+/g, "_")}.pdf`;
   doc.save(fileName);
 }

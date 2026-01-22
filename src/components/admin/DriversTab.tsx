@@ -98,7 +98,9 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
     e.preventDefault();
 
     if (!editingDriver) {
-      toast.error("Cannot create drivers from admin panel. Drivers must self-register.");
+      toast.error(
+        "Cannot create drivers from admin panel. Drivers must self-register.",
+      );
       return;
     }
 
@@ -163,7 +165,9 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Manage Drivers</h3>
-        <p className="text-sm text-gray-400">Drivers self-register. Click Edit to assign routes.</p>
+        <p className="text-sm text-gray-400">
+          Drivers self-register. Click Edit to assign routes.
+        </p>
       </div>
 
       {/* Drivers Table */}
@@ -303,7 +307,8 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
                       <option value="">No route</option>
                       {routes.map((route) => (
                         <option key={route.id} value={route.id}>
-                          {route.name} {route.vehicle_no ? `(${route.vehicle_no})` : ""}
+                          {route.name}{" "}
+                          {route.vehicle_no ? `(${route.vehicle_no})` : ""}
                         </option>
                       ))}
                     </select>

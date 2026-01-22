@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import type { Route, Learner, SchoolSettings } from "@/types/database";
+import type { Route, Learner, SchoolSettings, Driver, Minder } from "@/types/database";
 import { generatePDF } from "@/lib/reports/pdf-generator";
 import { generateExcel } from "@/lib/reports/excel-generator";
 
@@ -35,6 +35,9 @@ export default function ReportsPage() {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [learners, setLearners] = useState<Learner[]>([]);
   const [settings, setSettings] = useState<SchoolSettings | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [minders, setMinders] = useState<Minder[]>([]);
+  const [areas, setAreas] = useState<{ id: string; name: string; route_id: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -70,17 +73,23 @@ export default function ReportsPage() {
     try {
       const supabase = getSupabaseClient();
 
-      const [routesRes, settingsRes] = await Promise.all([
+      const [routesRes, settingsRes, driversRes, mindersRes, areasRes] = await Promise.all([
         supabase
           .from("routes")
           .select("*")
           .eq("status", "active")
           .order("name"),
         supabase.from("school_settings").select("*").single(),
+        supabase.from("drivers").select("*").order("name"),
+        supabase.from("minders").select("*").order("name"),
+        supabase.from("areas").select("*").order("name"),
       ]);
 
       setRoutes(routesRes.data || []);
       setSettings(settingsRes.data);
+      setDrivers((driversRes.data || []) as Driver[]);
+      setMinders((mindersRes.data || []) as Minder[]);
+      setAreas(areasRes.data || []);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load data");
@@ -183,10 +192,20 @@ export default function ReportsPage() {
       }
 
       if (config.format === "pdf") {
+        // Find driver and minder for this route
+        const routeDriver = drivers.find((d) => d.route_id === config.routeId);
+        const routeMinder = minders.find((m) => m.route_id === config.routeId);
+        const routeAreas = areas
+          .filter((a) => a.route_id === config.routeId)
+          .map((a) => a.name);
+
         await generatePDF({
           route: route!,
           learners: filteredLearners,
           settings,
+          driver: routeDriver,
+          minder: routeMinder,
+          areas: routeAreas,
           columns: config.columns,
         });
         toast.success("PDF generated successfully");
