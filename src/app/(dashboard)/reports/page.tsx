@@ -49,6 +49,8 @@ export default function ReportsPage() {
   const [currentDriver, setCurrentDriver] = useState<Driver | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [lastGeneratedPdf, setLastGeneratedPdf] = useState<Blob | null>(null);
+  const [lastGeneratedRouteName, setLastGeneratedRouteName] = useState<string>("");
 
   const [config, setConfig] = useState<ReportConfig>({
     routeId: "",
@@ -242,7 +244,7 @@ export default function ReportsPage() {
           .filter((a) => a.route_id === config.routeId)
           .map((a) => a.name);
 
-        await generatePDF({
+        const pdfBlob = await generatePDF({
           route: route!,
           learners: filteredLearners,
           settings,
@@ -251,7 +253,12 @@ export default function ReportsPage() {
           areas: routeAreas,
           columns: config.columns,
         });
-        toast.success("PDF generated successfully");
+        
+        // Save for sharing
+        setLastGeneratedPdf(pdfBlob);
+        setLastGeneratedRouteName(route!.name);
+        
+        toast.success("PDF generated successfully! You can now share it.");
       } else {
         await generateExcel({
           route: route!,
@@ -266,6 +273,53 @@ export default function ReportsPage() {
     } finally {
       setGenerating(false);
     }
+  };
+
+  // Share via Email
+  const handleShareEmail = () => {
+    if (!lastGeneratedPdf) {
+      toast.error("Please generate a PDF first");
+      return;
+    }
+
+    const date = new Date().toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    
+    const subject = encodeURIComponent(`${lastGeneratedRouteName} Transport Report - ${date}`);
+    const body = encodeURIComponent(
+      `Dear Team,\n\nPlease find attached the ${lastGeneratedRouteName} Transport Learners Report generated on ${date}.\n\nNote: Please download the PDF from the system and attach it manually to this email.\n\nBest regards,\nLelani School Transport System`
+    );
+    
+    // Open email client
+    window.open(`mailto:lelanischool254@gmail.com?subject=${subject}&body=${body}`, "_blank");
+    
+    toast.success("Email client opened. Please attach the downloaded PDF.");
+  };
+
+  // Share via WhatsApp
+  const handleShareWhatsApp = () => {
+    if (!lastGeneratedPdf) {
+      toast.error("Please generate a PDF first");
+      return;
+    }
+
+    const date = new Date().toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    
+    const message = encodeURIComponent(
+      `📋 *${lastGeneratedRouteName} Transport Report*\n\n📅 Date: ${date}\n🏫 Lelani School Transport System\n\n✅ Report has been generated and downloaded.\n\nPlease check the downloaded PDF for the complete learner list.`
+    );
+    
+    // Open WhatsApp
+    window.open(`https://wa.me/?text=${message}`, "_blank");
+    
+    toast.success("WhatsApp opened. Share the message and attach the downloaded PDF.");
   };
 
   // Get unique values for filters
@@ -483,23 +537,45 @@ export default function ReportsPage() {
                 )}
               </p>
             </div>
-            <button
-              onClick={handleGenerateReport}
-              disabled={generating || !config.routeId}
-              className="btn btn-primary"
-            >
-              {generating ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleGenerateReport}
+                disabled={generating || !config.routeId}
+                className="btn btn-primary"
+              >
+                {generating ? (
+                  <>
+                    <span className="spinner" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    {config.format === "pdf" ? "📄" : "📊"} Generate{" "}
+                    {config.format.toUpperCase()}
+                  </>
+                )}
+              </button>
+              
+              {/* Share Buttons - Only show after PDF is generated */}
+              {lastGeneratedPdf && config.format === "pdf" && (
                 <>
-                  <span className="spinner" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  {config.format === "pdf" ? "📄" : "📊"} Generate{" "}
-                  {config.format.toUpperCase()}
+                  <button
+                    onClick={handleShareEmail}
+                    className="btn btn-secondary"
+                    title="Share via Email"
+                  >
+                    📧 Email
+                  </button>
+                  <button
+                    onClick={handleShareWhatsApp}
+                    className="btn btn-secondary"
+                    title="Share via WhatsApp"
+                  >
+                    💬 WhatsApp
+                  </button>
                 </>
               )}
-            </button>
+            </div>
           </div>
         </div>
       </div>

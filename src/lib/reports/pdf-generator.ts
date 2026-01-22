@@ -31,7 +31,7 @@ interface PDFConfig {
   };
 }
 
-export async function generatePDF(config: PDFConfig) {
+export async function generatePDF(config: PDFConfig): Promise<Blob> {
   const { route, learners, settings, driver, minder, areas, columns } = config;
 
   // Create PDF document - Landscape A4
@@ -58,13 +58,39 @@ export async function generatePDF(config: PDFConfig) {
   doc.setFillColor(...primaryRed);
   doc.rect(0, 0, pageWidth, headerHeight, "F");
 
-  // Logo placeholder - white circle on left
-  doc.setFillColor(255, 255, 255);
-  doc.circle(20, headerHeight / 2, 12, "F");
-  doc.setFillColor(...primaryRed);
-  doc.setFontSize(8);
-  doc.setTextColor(...primaryRed);
-  doc.text("LS", 20, headerHeight / 2 + 1, { align: "center" });
+  // Try to load and add the school logo
+  try {
+    const logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    await new Promise<void>((resolve, reject) => {
+      logoImg.onload = () => resolve();
+      logoImg.onerror = () => reject(new Error("Failed to load logo"));
+      logoImg.src = "/lslogo.webp";
+    });
+    
+    // Create a canvas to convert to base64
+    const canvas = document.createElement("canvas");
+    canvas.width = logoImg.width;
+    canvas.height = logoImg.height;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.drawImage(logoImg, 0, 0);
+      const logoBase64 = canvas.toDataURL("image/png");
+      // Add circular white background
+      doc.setFillColor(255, 255, 255);
+      doc.circle(20, headerHeight / 2, 12, "F");
+      // Add logo image
+      doc.addImage(logoBase64, "PNG", 8, 5, 24, 24);
+    }
+  } catch {
+    // Fallback to text placeholder if logo fails
+    doc.setFillColor(255, 255, 255);
+    doc.circle(20, headerHeight / 2, 12, "F");
+    doc.setFillColor(...primaryRed);
+    doc.setFontSize(10);
+    doc.setTextColor(...primaryRed);
+    doc.text("LS", 20, headerHeight / 2 + 1, { align: "center" });
+  }
 
   // School Name - Large centered
   doc.setTextColor(...white);
@@ -84,10 +110,10 @@ export async function generatePDF(config: PDFConfig) {
     align: "center",
   });
 
-  // Report Title
+  // Report Title - Dynamic with Route Name
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
-  doc.text("ROUTE LEARNERS REPORT", pageWidth / 2, 29, { align: "center" });
+  doc.text(`${route.name.toUpperCase()} LEARNERS REPORT`, pageWidth / 2, 29, { align: "center" });
 
   // ========================================
   // ROUTE INFO & PERSONNEL SECTION
@@ -306,8 +332,13 @@ export async function generatePDF(config: PDFConfig) {
   }
 
   // ========================================
-  // SAVE PDF
+  // RETURN PDF AS BLOB (for sharing) AND SAVE
   // ========================================
   const fileName = `${route.name.replace(/\s+/g, "_")}_Route_Report_${date.replace(/\s+/g, "_")}.pdf`;
+  const pdfBlob = doc.output("blob");
+  
+  // Also save locally
   doc.save(fileName);
+  
+  return pdfBlob;
 }
