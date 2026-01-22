@@ -20,6 +20,7 @@
    - **anon public** key (long string starting with `eyJ...`)
 
 3. In your `lelani-next` folder, create `.env.local`:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
@@ -371,6 +372,7 @@ Since user_id references auth.users, you need to:
    - Copy the User ID
 
 3. **Then insert the driver record:**
+
 ```sql
 -- Replace 'YOUR_USER_ID' with the actual UUID from auth.users
 INSERT INTO drivers (user_id, name, email, phone, role, status) VALUES

@@ -10,23 +10,19 @@ import { generateExcel } from "@/lib/reports/excel-generator";
 interface ReportConfig {
   routeId: string;
   format: "pdf" | "excel";
-  sortBy: "time" | "name" | "class" | "area" | "trip";
+  sortBy: "name" | "grade" | "area" | "trip";
   tripFilter: string;
   pickupAreaFilter: string;
-  dropoffAreaFilter: string;
   classFilter: string;
   includeInactive: boolean;
   columns: {
     name: boolean;
-    admission_no: boolean;
-    class: boolean;
-    trip: boolean;
-    pickup_area: boolean;
-    pickup_time: boolean;
-    dropoff_area: boolean;
-    drop_time: boolean;
-    father_phone: boolean;
-    mother_phone: boolean;
+    grade: boolean;
+    trip_type: boolean;
+    area: boolean;
+    guardian_name: boolean;
+    guardian_phone: boolean;
+    status: boolean;
   };
 }
 
@@ -40,23 +36,19 @@ export default function ReportsPage() {
   const [config, setConfig] = useState<ReportConfig>({
     routeId: "",
     format: "pdf",
-    sortBy: "time",
+    sortBy: "name",
     tripFilter: "",
     pickupAreaFilter: "",
-    dropoffAreaFilter: "",
     classFilter: "",
     includeInactive: false,
     columns: {
       name: true,
-      admission_no: true,
-      class: true,
-      trip: true,
-      pickup_area: true,
-      pickup_time: true,
-      dropoff_area: false,
-      drop_time: false,
-      father_phone: true,
-      mother_phone: true,
+      grade: true,
+      trip_type: true,
+      area: true,
+      guardian_name: true,
+      guardian_phone: true,
+      status: false,
     },
   });
 
@@ -125,20 +117,18 @@ export default function ReportsPage() {
 
     // Apply filters
     if (!config.includeInactive) {
-      filtered = filtered.filter((l) => l.active);
+      filtered = filtered.filter((l) => l.status === "active");
     }
     if (config.tripFilter) {
-      filtered = filtered.filter(
-        (l) => l.trip === parseInt(config.tripFilter)
-      );
+      filtered = filtered.filter((l) => l.trip_type === config.tripFilter);
     }
     if (config.pickupAreaFilter) {
       filtered = filtered.filter(
-        (l) => l.pickup_area === config.pickupAreaFilter
+        (l) => l.area === config.pickupAreaFilter,
       );
     }
     if (config.classFilter) {
-      filtered = filtered.filter((l) => l.class === config.classFilter);
+      filtered = filtered.filter((l) => l.grade === config.classFilter);
     }
 
     // Apply sorting
@@ -146,18 +136,17 @@ export default function ReportsPage() {
       case "name":
         filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
-      case "class":
-        filtered.sort((a, b) => a.class.localeCompare(b.class));
+      case "grade":
+        filtered.sort((a, b) => (a.grade || "").localeCompare(b.grade || ""));
         break;
       case "area":
-        filtered.sort((a, b) => a.pickup_area.localeCompare(b.pickup_area));
+        filtered.sort((a, b) => (a.area || "").localeCompare(b.area || ""));
         break;
       case "trip":
-        filtered.sort((a, b) => a.trip - b.trip);
+        filtered.sort((a, b) => (a.trip_type || "").localeCompare(b.trip_type || ""));
         break;
-      case "time":
       default:
-        filtered.sort((a, b) => a.pickup_time.localeCompare(b.pickup_time));
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
         break;
     }
 
@@ -206,8 +195,8 @@ export default function ReportsPage() {
   };
 
   // Get unique values for filters
-  const uniqueAreas = [...new Set(learners.map((l) => l.pickup_area))].sort();
-  const uniqueClasses = [...new Set(learners.map((l) => l.class))].sort();
+  const uniqueAreas = [...new Set(learners.map((l) => l.area).filter((a): a is string => !!a))].sort();
+  const uniqueClasses = [...new Set(learners.map((l) => l.grade).filter((g): g is string => !!g))].sort();
   const filteredCount = getFilteredLearners().length;
 
   if (loading) {
@@ -226,7 +215,9 @@ export default function ReportsPage() {
       {/* Page Header */}
       <header>
         <h1 className="text-3xl font-bold">Generate Reports</h1>
-        <p className="text-gray-400 mt-1">Create customized PDF and Excel reports</p>
+        <p className="text-gray-400 mt-1">
+          Create customized PDF and Excel reports
+        </p>
       </header>
 
       <div className="space-y-6">
@@ -257,7 +248,10 @@ export default function ReportsPage() {
               <select
                 value={config.format}
                 onChange={(e) =>
-                  handleConfigChange("format", e.target.value as "pdf" | "excel")
+                  handleConfigChange(
+                    "format",
+                    e.target.value as "pdf" | "excel",
+                  )
                 }
                 className="form-input"
               >
@@ -273,11 +267,10 @@ export default function ReportsPage() {
                 onChange={(e) => handleConfigChange("sortBy", e.target.value)}
                 className="form-input"
               >
-                <option value="time">Pickup Time</option>
                 <option value="name">Learner Name</option>
-                <option value="class">Class</option>
+                <option value="grade">Grade</option>
                 <option value="area">Pickup Area</option>
-                <option value="trip">Trip Number</option>
+                <option value="trip">Trip Type</option>
               </select>
             </div>
           </div>
@@ -291,7 +284,9 @@ export default function ReportsPage() {
               <label className="form-label">Trip</label>
               <select
                 value={config.tripFilter}
-                onChange={(e) => handleConfigChange("tripFilter", e.target.value)}
+                onChange={(e) =>
+                  handleConfigChange("tripFilter", e.target.value)
+                }
                 className="form-input"
               >
                 <option value="">All Trips</option>
@@ -323,7 +318,9 @@ export default function ReportsPage() {
               <label className="form-label">Class</label>
               <select
                 value={config.classFilter}
-                onChange={(e) => handleConfigChange("classFilter", e.target.value)}
+                onChange={(e) =>
+                  handleConfigChange("classFilter", e.target.value)
+                }
                 className="form-input"
               >
                 <option value="">All Classes</option>
@@ -371,7 +368,10 @@ export default function ReportsPage() {
             {Object.entries(config.columns)
               .filter(([key]) => key !== "name")
               .map(([key, value]) => (
-                <label key={key} className="flex items-center gap-2 cursor-pointer">
+                <label
+                  key={key}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <input
                     type="checkbox"
                     checked={value}

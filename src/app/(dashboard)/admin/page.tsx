@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import type { Driver, Route, Vehicle, Minder, SchoolSettings } from "@/types/database";
+import type {
+  Driver,
+  Route,
+  Vehicle,
+  Minder,
+  SchoolSettings,
+} from "@/types/database";
 
 // Tab components
 import RoutesTab from "@/components/admin/RoutesTab";
@@ -15,7 +21,14 @@ import AreasTab from "@/components/admin/AreasTab";
 import SchoolSettingsTab from "@/components/admin/SchoolSettingsTab";
 import ImportTab from "@/components/admin/ImportTab";
 
-type TabType = "routes" | "drivers" | "minders" | "vehicles" | "areas" | "school" | "import";
+type TabType =
+  | "routes"
+  | "drivers"
+  | "minders"
+  | "vehicles"
+  | "areas"
+  | "school"
+  | "import";
 
 const TABS: { id: TabType; label: string; icon: string }[] = [
   { id: "school", label: "School Settings", icon: "🏫" },
@@ -63,7 +76,7 @@ export default function AdminPage() {
         .from("drivers")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .single() as { data: Driver | null };
 
       if (!driverData || driverData.role !== "admin") {
         toast.error("Access denied. Admin privileges required.");
@@ -193,8 +206,8 @@ export default function AdminPage() {
         {activeTab === "drivers" && <DriversTab onUpdate={loadStats} />}
         {activeTab === "minders" && <MindersTab onUpdate={loadStats} />}
         {activeTab === "vehicles" && <VehiclesTab onUpdate={loadStats} />}
-        {activeTab === "areas" && <AreasTab />}
-        {activeTab === "school" && <SchoolSettingsTab />}
+        {activeTab === "areas" && <AreasTab onUpdate={loadStats} />}
+        {activeTab === "school" && <SchoolSettingsTab onUpdate={loadStats} />}
         {activeTab === "import" && <ImportTab onUpdate={loadStats} />}
       </div>
     </div>

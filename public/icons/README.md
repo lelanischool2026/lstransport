@@ -12,10 +12,12 @@ This directory should contain PWA icon files in the following sizes:
 - icon-512x512.png
 
 You can generate these icons from your logo using tools like:
+
 - https://realfavicongenerator.net/
 - https://www.pwabuilder.com/imageGenerator
 
 The icons should:
+
 1. Be square (same width and height)
 2. Have a transparent or solid background
 3. Be recognizable at small sizes

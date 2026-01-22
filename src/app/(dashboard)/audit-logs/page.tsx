@@ -184,7 +184,8 @@ export default function AuditLogsPage() {
                   </span>
                   {log.field_name && (
                     <span className="text-gray-400 text-sm">
-                      Field: <strong className="text-white">{log.field_name}</strong>
+                      Field:{" "}
+                      <strong className="text-white">{log.field_name}</strong>
                     </span>
                   )}
                 </div>
@@ -217,7 +218,7 @@ export default function AuditLogsPage() {
                 <p className="font-medium">{log.user_name}</p>
                 <p className="text-gray-400 capitalize">{log.user_role}</p>
                 <p className="text-gray-500 text-xs mt-1">
-                  {formatDate(log.timestamp)}
+                  {formatDate(log.created_at)}
                 </p>
               </div>
             </div>

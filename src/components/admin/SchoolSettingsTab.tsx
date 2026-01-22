@@ -9,7 +9,9 @@ interface SchoolSettingsTabProps {
   onUpdate: () => void;
 }
 
-export default function SchoolSettingsTab({ onUpdate }: SchoolSettingsTabProps) {
+export default function SchoolSettingsTab({
+  onUpdate,
+}: SchoolSettingsTabProps) {
   const [settings, setSettings] = useState<SchoolSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -34,7 +36,7 @@ export default function SchoolSettingsTab({ onUpdate }: SchoolSettingsTabProps) 
       const { data, error } = await supabase
         .from("school_settings")
         .select("*")
-        .single();
+        .single() as { data: SchoolSettings | null; error: any };
 
       if (error && error.code !== "PGRST116") throw error;
 
@@ -82,14 +84,16 @@ export default function SchoolSettingsTab({ onUpdate }: SchoolSettingsTabProps) 
       };
 
       if (settings) {
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("school_settings")
           .update(settingsData)
           .eq("id", settings.id);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("school_settings")
           .insert(settingsData);
 
@@ -135,7 +139,10 @@ export default function SchoolSettingsTab({ onUpdate }: SchoolSettingsTabProps) 
                 type="text"
                 value={formData.school_name}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, school_name: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    school_name: e.target.value,
+                  }))
                 }
                 placeholder="Enter school name"
                 className="form-input"
@@ -149,7 +156,10 @@ export default function SchoolSettingsTab({ onUpdate }: SchoolSettingsTabProps) 
                 type="url"
                 value={formData.school_logo}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, school_logo: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    school_logo: e.target.value,
+                  }))
                 }
                 placeholder="https://..."
                 className="form-input"

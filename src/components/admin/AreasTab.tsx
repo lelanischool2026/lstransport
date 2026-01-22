@@ -32,12 +32,20 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
       const supabase = getSupabaseClient();
 
       const [areasRes, routesRes] = await Promise.all([
-        supabase.from("areas").select("*").order("route_id").order("pickup_order"),
-        supabase.from("routes").select("*").eq("status", "active").order("name"),
+        supabase
+          .from("areas")
+          .select("*")
+          .order("route_id")
+          .order("pickup_order"),
+        supabase
+          .from("routes")
+          .select("*")
+          .eq("status", "active")
+          .order("name"),
       ]);
 
-      setAreas(areasRes.data || []);
-      setRoutes(routesRes.data || []);
+      setAreas((areasRes.data || []) as Area[]);
+      setRoutes((routesRes.data || []) as Route[]);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load data");
@@ -93,7 +101,8 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
       };
 
       if (editingArea) {
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("areas")
           .update(areaData)
           .eq("id", editingArea.id);
@@ -101,7 +110,8 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
         if (error) throw error;
         toast.success("Area updated successfully");
       } else {
-        const { error } = await supabase.from("areas").insert(areaData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any).from("areas").insert(areaData);
 
         if (error) throw error;
         toast.success("Area created successfully");
@@ -123,7 +133,8 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
 
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase.from("areas").delete().eq("id", area.id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any).from("areas").delete().eq("id", area.id);
 
       if (error) throw error;
 
@@ -152,11 +163,11 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
       const prevOrder = prevArea.pickup_order;
 
       await Promise.all([
-        supabase
+        (supabase as any)
           .from("areas")
           .update({ pickup_order: prevOrder })
           .eq("id", area.id),
-        supabase
+        (supabase as any)
           .from("areas")
           .update({ pickup_order: currentOrder })
           .eq("id", prevArea.id),
@@ -185,11 +196,11 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
       const nextOrder = nextArea.pickup_order;
 
       await Promise.all([
-        supabase
+        (supabase as any)
           .from("areas")
           .update({ pickup_order: nextOrder })
           .eq("id", area.id),
-        supabase
+        (supabase as any)
           .from("areas")
           .update({ pickup_order: currentOrder })
           .eq("id", nextArea.id),

@@ -36,7 +36,7 @@ self.addEventListener("push", (event) => {
   if (!event.data) return;
 
   const data = event.data.json();
-  const options: NotificationOptions = {
+  const options = {
     body: data.body || "New notification",
     icon: "/icons/icon-192x192.png",
     badge: "/icons/icon-72x72.png",
@@ -44,9 +44,11 @@ self.addEventListener("push", (event) => {
     data: {
       url: data.url || "/dashboard",
     },
-  };
+  } as NotificationOptions & { vibrate?: number[] };
 
-  event.waitUntil(self.registration.showNotification(data.title || "Lelani", options));
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Lelani", options),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
@@ -55,17 +57,19 @@ self.addEventListener("notificationclick", (event) => {
   const urlToOpen = event.notification.data?.url || "/dashboard";
 
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // If there's already a window open, focus it
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && "focus" in client) {
-          return client.focus();
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        // If there's already a window open, focus it
+        for (const client of clientList) {
+          if (client.url.includes(self.location.origin) && "focus" in client) {
+            return client.focus();
+          }
         }
-      }
-      // Otherwise, open a new window
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(urlToOpen);
-      }
-    })
+        // Otherwise, open a new window
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(urlToOpen);
+        }
+      }),
   );
 });

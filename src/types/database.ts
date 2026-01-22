@@ -1,5 +1,5 @@
 // Database types for Supabase
-// These match the schema from SUPABASE_SETUP.md
+// These match the schema from SUPABASE_SETUP_GUIDE.md
 
 export type Json =
   | string
@@ -45,6 +45,7 @@ export interface Database {
           status?: "active" | "archived";
           updated_at?: string;
         };
+        Relationships: [];
       };
       drivers: {
         Row: {
@@ -56,7 +57,6 @@ export interface Database {
           route_id: string | null;
           role: "driver" | "admin";
           status: "active" | "inactive";
-          photo_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -69,7 +69,6 @@ export interface Database {
           route_id?: string | null;
           role?: "driver" | "admin";
           status?: "active" | "inactive";
-          photo_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -82,9 +81,9 @@ export interface Database {
           route_id?: string | null;
           role?: "driver" | "admin";
           status?: "active" | "inactive";
-          photo_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       minders: {
         Row: {
@@ -113,176 +112,167 @@ export interface Database {
           route_id?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       areas: {
         Row: {
           id: string;
           name: string;
-          route_id: string | null;
+          route_id: string;
+          pickup_order: number;
           created_at: string;
         };
         Insert: {
           id?: string;
           name: string;
-          route_id?: string | null;
+          route_id: string;
+          pickup_order?: number;
           created_at?: string;
         };
         Update: {
           id?: string;
           name?: string;
-          route_id?: string | null;
+          route_id?: string;
+          pickup_order?: number;
         };
+        Relationships: [];
       };
       learners: {
         Row: {
           id: string;
           name: string;
-          admission_no: string;
-          class: string;
-          pickup_area: string;
-          pickup_time: string;
-          dropoff_area: string | null;
-          drop_time: string | null;
-          trip: number;
-          father_phone: string;
-          mother_phone: string;
+          grade: string | null;
+          guardian_name: string | null;
+          guardian_phone: string;
+          area: string | null;
           route_id: string | null;
-          active: boolean;
+          trip_type: "morning" | "afternoon" | "both";
+          status: "active" | "inactive";
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           name: string;
-          admission_no: string;
-          class: string;
-          pickup_area: string;
-          pickup_time: string;
-          dropoff_area?: string | null;
-          drop_time?: string | null;
-          trip?: number;
-          father_phone: string;
-          mother_phone: string;
+          grade?: string | null;
+          guardian_name?: string | null;
+          guardian_phone: string;
+          area?: string | null;
           route_id?: string | null;
-          active?: boolean;
+          trip_type?: "morning" | "afternoon" | "both";
+          status?: "active" | "inactive";
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           name?: string;
-          admission_no?: string;
-          class?: string;
-          pickup_area?: string;
-          pickup_time?: string;
-          dropoff_area?: string | null;
-          drop_time?: string | null;
-          trip?: number;
-          father_phone?: string;
-          mother_phone?: string;
+          grade?: string | null;
+          guardian_name?: string | null;
+          guardian_phone?: string;
+          area?: string | null;
           route_id?: string | null;
-          active?: boolean;
+          trip_type?: "morning" | "afternoon" | "both";
+          status?: "active" | "inactive";
           updated_at?: string;
         };
+        Relationships: [];
       };
       vehicles: {
         Row: {
           id: string;
-          vehicle_no: string;
+          reg_number: string;
           make: string | null;
           model: string | null;
-          year: number | null;
-          color: string | null;
           capacity: number;
-          image_url: string | null;
-          status: "active" | "inactive" | "maintenance";
-          route_id: string | null;
+          status: "active" | "maintenance" | "retired";
+          photo_url: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          vehicle_no: string;
+          reg_number: string;
           make?: string | null;
           model?: string | null;
-          year?: number | null;
-          color?: string | null;
           capacity?: number;
-          image_url?: string | null;
-          status?: "active" | "inactive" | "maintenance";
-          route_id?: string | null;
+          status?: "active" | "maintenance" | "retired";
+          photo_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          vehicle_no?: string;
+          reg_number?: string;
           make?: string | null;
           model?: string | null;
-          year?: number | null;
-          color?: string | null;
           capacity?: number;
-          image_url?: string | null;
-          status?: "active" | "inactive" | "maintenance";
-          route_id?: string | null;
+          status?: "active" | "maintenance" | "retired";
+          photo_url?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       school_settings: {
         Row: {
           id: string;
           school_name: string;
-          phone: string | null;
-          email: string | null;
-          website: string | null;
+          school_logo: string | null;
+          contact_email: string | null;
+          contact_phone: string | null;
           address: string | null;
-          logo_url: string | null;
+          current_term: string;
+          current_year: number;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          school_name?: string;
-          phone?: string | null;
-          email?: string | null;
-          website?: string | null;
+          school_name: string;
+          school_logo?: string | null;
+          contact_email?: string | null;
+          contact_phone?: string | null;
           address?: string | null;
-          logo_url?: string | null;
+          current_term?: string;
+          current_year?: number;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           school_name?: string;
-          phone?: string | null;
-          email?: string | null;
-          website?: string | null;
+          school_logo?: string | null;
+          contact_email?: string | null;
+          contact_phone?: string | null;
           address?: string | null;
-          logo_url?: string | null;
+          current_term?: string;
+          current_year?: number;
           updated_at?: string;
         };
+        Relationships: [];
       };
       school_config: {
         Row: {
           id: string;
           type: "grade" | "stream";
           name: string;
-          parent_id: string | null;
+          grade: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           type: "grade" | "stream";
           name: string;
-          parent_id?: string | null;
+          grade?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           type?: "grade" | "stream";
           name?: string;
-          parent_id?: string | null;
+          grade?: string | null;
         };
+        Relationships: [];
       };
       audit_logs: {
         Row: {
@@ -295,7 +285,7 @@ export interface Database {
           field_name: string | null;
           old_value: string | null;
           new_value: string | null;
-          timestamp: string;
+          created_at: string;
         };
         Insert: {
           id?: string;
@@ -307,7 +297,7 @@ export interface Database {
           field_name?: string | null;
           old_value?: string | null;
           new_value?: string | null;
-          timestamp?: string;
+          created_at?: string;
         };
         Update: {
           id?: string;
@@ -320,7 +310,20 @@ export interface Database {
           old_value?: string | null;
           new_value?: string | null;
         };
+        Relationships: [];
       };
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
     };
   };
 }
@@ -332,9 +335,24 @@ export type Minder = Database["public"]["Tables"]["minders"]["Row"];
 export type Learner = Database["public"]["Tables"]["learners"]["Row"];
 export type Vehicle = Database["public"]["Tables"]["vehicles"]["Row"];
 export type Area = Database["public"]["Tables"]["areas"]["Row"];
-export type SchoolSettings = Database["public"]["Tables"]["school_settings"]["Row"];
+export type SchoolSettings =
+  Database["public"]["Tables"]["school_settings"]["Row"];
 export type SchoolConfig = Database["public"]["Tables"]["school_config"]["Row"];
 export type AuditLog = Database["public"]["Tables"]["audit_logs"]["Row"];
+
+// Insert types
+export type RouteInsert = Database["public"]["Tables"]["routes"]["Insert"];
+export type DriverInsert = Database["public"]["Tables"]["drivers"]["Insert"];
+export type MinderInsert = Database["public"]["Tables"]["minders"]["Insert"];
+export type LearnerInsert = Database["public"]["Tables"]["learners"]["Insert"];
+export type VehicleInsert = Database["public"]["Tables"]["vehicles"]["Insert"];
+export type AreaInsert = Database["public"]["Tables"]["areas"]["Insert"];
+export type SchoolSettingsInsert =
+  Database["public"]["Tables"]["school_settings"]["Insert"];
+export type SchoolConfigInsert =
+  Database["public"]["Tables"]["school_config"]["Insert"];
+export type AuditLogInsert =
+  Database["public"]["Tables"]["audit_logs"]["Insert"];
 
 // Extended types with relations
 export interface RouteWithRelations extends Route {

@@ -23,6 +23,7 @@ School Transport Management System built with Next.js 15, Supabase, and Tailwind
 ### Environment Setup
 
 1. Copy the environment example file:
+
    ```bash
    cp .env.local.example .env.local
    ```
@@ -89,12 +90,14 @@ lelani-next/
 ## Features
 
 ### For Drivers
+
 - View assigned route and learners
 - See minder contact information
 - Access route-specific reports
 - Offline support via PWA
 
 ### For Admins
+
 - Full learner management (CRUD)
 - Route and area management
 - Driver and minder management
@@ -116,6 +119,7 @@ lelani-next/
 ### Other Platforms
 
 Build the production bundle:
+
 ```bash
 npm run build
 ```
@@ -125,6 +129,7 @@ The output will be in the `.next` folder.
 ## PWA Icons
 
 Generate PWA icons from your logo using:
+
 - [RealFaviconGenerator](https://realfavicongenerator.net/)
 - [PWA Builder Image Generator](https://www.pwabuilder.com/imageGenerator)
 

@@ -37,7 +37,7 @@ export default function VehiclesTab({ onUpdate }: VehiclesTabProps) {
         .order("reg_number");
 
       if (error) throw error;
-      setVehicles(data || []);
+      setVehicles((data || []) as Vehicle[]);
     } catch (error) {
       console.error("Error loading vehicles:", error);
       toast.error("Failed to load vehicles");
@@ -97,7 +97,8 @@ export default function VehiclesTab({ onUpdate }: VehiclesTabProps) {
       };
 
       if (editingVehicle) {
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("vehicles")
           .update(vehicleData)
           .eq("id", editingVehicle.id);
@@ -105,7 +106,8 @@ export default function VehiclesTab({ onUpdate }: VehiclesTabProps) {
         if (error) throw error;
         toast.success("Vehicle updated successfully");
       } else {
-        const { error } = await supabase.from("vehicles").insert(vehicleData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any).from("vehicles").insert(vehicleData);
 
         if (error) throw error;
         toast.success("Vehicle added successfully");
@@ -129,7 +131,8 @@ export default function VehiclesTab({ onUpdate }: VehiclesTabProps) {
 
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from("vehicles")
         .delete()
         .eq("id", vehicle.id);
@@ -186,12 +189,16 @@ export default function VehiclesTab({ onUpdate }: VehiclesTabProps) {
             <div key={vehicle.id} className="card p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h4 className="font-semibold text-lg">{vehicle.reg_number}</h4>
+                  <h4 className="font-semibold text-lg">
+                    {vehicle.reg_number}
+                  </h4>
                   <p className="text-gray-400 text-sm">
                     {vehicle.make} {vehicle.model}
                   </p>
                 </div>
-                <span className={`badge ${getStatusBadgeClass(vehicle.status)}`}>
+                <span
+                  className={`badge ${getStatusBadgeClass(vehicle.status)}`}
+                >
                   {vehicle.status}
                 </span>
               </div>
@@ -280,7 +287,10 @@ export default function VehiclesTab({ onUpdate }: VehiclesTabProps) {
                       type="text"
                       value={formData.make}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, make: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          make: e.target.value,
+                        }))
                       }
                       placeholder="e.g., Toyota"
                       className="form-input"

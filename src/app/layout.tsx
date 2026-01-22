@@ -7,8 +7,7 @@ export const metadata: Metadata = {
     default: "Lelani School Transport System",
     template: "%s | Lelani Transport",
   },
-  description:
-    "A modern, secure transport management system for Lelani School",
+  description: "A modern, secure transport management system for Lelani School",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

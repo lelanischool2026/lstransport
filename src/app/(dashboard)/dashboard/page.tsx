@@ -48,7 +48,7 @@ export default function DashboardPage() {
         .from("drivers")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .single() as { data: Driver | null };
 
       setDriver(driverData);
 
@@ -62,11 +62,12 @@ export default function DashboardPage() {
               .eq("status", "active"),
             supabase.from("drivers").select("id", { count: "exact" }),
             supabase.from("minders").select("id", { count: "exact" }),
-            supabase.from("learners").select("id, active", { count: "exact" }),
+            supabase.from("learners").select("id, status", { count: "exact" }),
           ]);
 
+        const learnersData = learnersRes.data as { id: string; status: string }[] | null;
         const activeLearners =
-          learnersRes.data?.filter((l) => l.active).length || 0;
+          learnersData?.filter((l) => l.status === "active").length || 0;
 
         setStats({
           totalLearners: learnersRes.count || 0,
@@ -92,21 +93,21 @@ export default function DashboardPage() {
             .single(),
           supabase
             .from("learners")
-            .select("id, active")
+            .select("id, status")
             .eq("route_id", driverData.route_id),
         ]);
 
-        setRoute(routeRes.data);
-        setMinder(minderRes.data);
+        setRoute(routeRes.data as Route | null);
+        setMinder(minderRes.data as Minder | null);
 
-        const learners = learnersRes.data || [];
-        const activeLearners = learners.filter((l) => l.active).length;
+        const learners = (learnersRes.data || []) as { id: string; status: string }[];
+        const activeLearners = learners.filter((l) => l.status === "active").length;
 
         setStats({
           totalLearners: learners.length,
           activeLearners,
-          totalAreas: routeRes.data?.areas?.length || 0,
-          routeName: routeRes.data?.name || "-",
+          totalAreas: (routeRes.data as Route | null)?.areas?.length || 0,
+          routeName: (routeRes.data as Route | null)?.name || "-",
         });
       }
     } catch (error) {

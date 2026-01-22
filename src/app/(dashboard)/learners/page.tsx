@@ -19,7 +19,9 @@ export default function LearnersPage() {
   const [routeFilter, setRouteFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [classFilter, setClassFilter] = useState("");
-  const [tripFilter, setTripFilter] = useState("");
+  const [tripFilter, setTripFilter] = useState<
+    "" | "morning" | "afternoon" | "both"
+  >("");
 
   useEffect(() => {
     loadData();
@@ -40,7 +42,7 @@ export default function LearnersPage() {
         .from("drivers")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .single() as { data: Driver | null };
 
       setDriver(driverData);
 
@@ -49,7 +51,7 @@ export default function LearnersPage() {
         .from("routes")
         .select("*")
         .eq("status", "active")
-        .order("name");
+        .order("name") as { data: Route[] | null };
 
       setRoutes(routesData || []);
 
@@ -57,7 +59,7 @@ export default function LearnersPage() {
       const { data: learnersData } = await supabase
         .from("learners")
         .select("*")
-        .order("name");
+        .order("name") as { data: Learner[] | null };
 
       setLearners(learnersData || []);
     } catch (error) {
@@ -85,9 +87,10 @@ export default function LearnersPage() {
 
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from("learners")
-        .update({ active: false })
+        .update({ status: "inactive" })
         .eq("id", learner.id);
 
       if (error) throw error;
@@ -103,9 +106,10 @@ export default function LearnersPage() {
   const handleReactivateLearner = async (learner: Learner) => {
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from("learners")
-        .update({ active: true })
+        .update({ status: "active" })
         .eq("id", learner.id);
 
       if (error) throw error;
@@ -128,25 +132,32 @@ export default function LearnersPage() {
     loadData();
   };
 
-  // Get unique classes for filter
-  const uniqueClasses = [...new Set(learners.map((l) => l.class))].sort();
+  // Get unique grades for filter
+  const uniqueGrades = [
+    ...new Set(learners.map((l) => l.grade).filter(Boolean)),
+  ].sort();
 
   // Filter learners
   const filteredLearners = learners.filter((learner) => {
     if (
       searchTerm &&
       !learner.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !learner.admission_no.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      !learner.class.toLowerCase().includes(searchTerm.toLowerCase())
+      !(learner.grade?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase(),
+      ) &&
+      !(learner.guardian_name?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase(),
+      )
     ) {
       return false;
     }
 
     if (routeFilter && learner.route_id !== routeFilter) return false;
-    if (statusFilter === "active" && !learner.active) return false;
-    if (statusFilter === "inactive" && learner.active) return false;
-    if (classFilter && learner.class !== classFilter) return false;
-    if (tripFilter && learner.trip !== parseInt(tripFilter)) return false;
+    if (statusFilter === "active" && learner.status !== "active") return false;
+    if (statusFilter === "inactive" && learner.status !== "inactive")
+      return false;
+    if (classFilter && learner.grade !== classFilter) return false;
+    if (tripFilter && learner.trip_type !== tripFilter) return false;
 
     return true;
   });
@@ -158,7 +169,7 @@ export default function LearnersPage() {
       if (driver.role === "admin") return true;
       return learner.route_id === driver.route_id;
     },
-    [driver]
+    [driver],
   );
 
   // Get route name by ID
@@ -232,10 +243,10 @@ export default function LearnersPage() {
             onChange={(e) => setClassFilter(e.target.value)}
             className="form-input"
           >
-            <option value="">All Classes</option>
-            {uniqueClasses.map((cls) => (
-              <option key={cls} value={cls}>
-                {cls}
+            <option value="">All Grades</option>
+            {uniqueGrades.map((grade) => (
+              <option key={grade} value={grade || ""}>
+                {grade}
               </option>
             ))}
           </select>
@@ -263,12 +274,11 @@ export default function LearnersPage() {
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Class</th>
+                  <th>Grade</th>
                   <th>Trip</th>
-                  <th>Pickup Area</th>
-                  <th>Pickup Time</th>
-                  <th>Father Phone</th>
-                  <th>Mother Phone</th>
+                  <th>Area</th>
+                  <th>Guardian</th>
+                  <th>Phone</th>
                   <th>Route</th>
                   <th>Status</th>
                   <th>Actions</th>
@@ -278,36 +288,28 @@ export default function LearnersPage() {
                 {filteredLearners.map((learner) => (
                   <tr key={learner.id}>
                     <td className="font-medium">{learner.name}</td>
-                    <td>{learner.class}</td>
+                    <td>{learner.grade || "-"}</td>
                     <td>
-                      <span className="badge badge-info">
-                        Trip {learner.trip}
+                      <span className="badge badge-info capitalize">
+                        {learner.trip_type}
                       </span>
                     </td>
-                    <td>{learner.pickup_area}</td>
-                    <td>{learner.pickup_time}</td>
+                    <td>{learner.area || "-"}</td>
+                    <td>{learner.guardian_name || "-"}</td>
                     <td>
                       <a
-                        href={`tel:${learner.father_phone}`}
+                        href={`tel:${learner.guardian_phone}`}
                         className="text-primary-400 hover:underline"
                       >
-                        {learner.father_phone}
-                      </a>
-                    </td>
-                    <td>
-                      <a
-                        href={`tel:${learner.mother_phone}`}
-                        className="text-primary-400 hover:underline"
-                      >
-                        {learner.mother_phone}
+                        {learner.guardian_phone}
                       </a>
                     </td>
                     <td>{getRouteName(learner.route_id)}</td>
                     <td>
                       <span
-                        className={`badge ${learner.active ? "badge-success" : "badge-danger"}`}
+                        className={`badge ${learner.status === "active" ? "badge-success" : "badge-danger"}`}
                       >
-                        {learner.active ? "Active" : "Inactive"}
+                        {learner.status === "active" ? "Active" : "Inactive"}
                       </span>
                     </td>
                     <td>
@@ -321,7 +323,7 @@ export default function LearnersPage() {
                             >
                               ✏️
                             </button>
-                            {learner.active ? (
+                            {learner.status === "active" ? (
                               <button
                                 onClick={() => handleDeleteLearner(learner)}
                                 className="p-1.5 text-red-400 hover:bg-red-400/10 rounded"
@@ -331,9 +333,7 @@ export default function LearnersPage() {
                               </button>
                             ) : (
                               <button
-                                onClick={() =>
-                                  handleReactivateLearner(learner)
-                                }
+                                onClick={() => handleReactivateLearner(learner)}
                                 className="p-1.5 text-green-400 hover:bg-green-400/10 rounded"
                                 title="Reactivate"
                               >

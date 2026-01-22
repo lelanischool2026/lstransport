@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import type { Learner, Route, Driver } from "@/types/database";
+import type { Learner, Route, Driver, LearnerInsert } from "@/types/database";
 
 interface LearnerModalProps {
   learner: Learner | null;
@@ -28,6 +28,12 @@ const GRADES = [
   "Grade 9",
 ];
 
+const TRIP_TYPES = [
+  { value: "both", label: "Both (Morning & Afternoon)" },
+  { value: "morning", label: "Morning Only" },
+  { value: "afternoon", label: "Afternoon Only" },
+] as const;
+
 export default function LearnerModal({
   learner,
   routes,
@@ -41,17 +47,14 @@ export default function LearnerModal({
 
   const [formData, setFormData] = useState({
     name: learner?.name || "",
-    admission_no: learner?.admission_no || "",
-    class: learner?.class || "",
-    trip: learner?.trip || 1,
-    pickup_area: learner?.pickup_area || "",
-    pickup_time: learner?.pickup_time || "",
-    dropoff_area: learner?.dropoff_area || "",
-    drop_time: learner?.drop_time || "",
-    father_phone: learner?.father_phone || "",
-    mother_phone: learner?.mother_phone || "",
+    grade: learner?.grade || "",
+    guardian_name: learner?.guardian_name || "",
+    guardian_phone: learner?.guardian_phone || "",
+    area: learner?.area || "",
     route_id: learner?.route_id || driver?.route_id || "",
-    active: learner?.active ?? true,
+    trip_type:
+      learner?.trip_type || ("both" as "morning" | "afternoon" | "both"),
+    status: learner?.status || ("active" as "active" | "inactive"),
   });
 
   // Load areas when route changes
@@ -65,18 +68,18 @@ export default function LearnerModal({
   }, [formData.route_id, routes]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    const { name, value, type } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: value,
     }));
   };
 
   const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+254[0-9]{9}$/;
+    // Allow various formats: +254..., 07..., 01...
+    const phoneRegex = /^(\+254|0)[0-9]{9}$/;
     return phoneRegex.test(phone);
   };
 
@@ -89,18 +92,13 @@ export default function LearnerModal({
       return;
     }
 
-    if (!formData.admission_no.trim()) {
-      toast.error("Admission number is required");
+    if (!formData.guardian_phone.trim()) {
+      toast.error("Guardian phone is required");
       return;
     }
 
-    if (!validatePhone(formData.father_phone)) {
-      toast.error("Father phone must be in format +254XXXXXXXXX");
-      return;
-    }
-
-    if (!validatePhone(formData.mother_phone)) {
-      toast.error("Mother phone must be in format +254XXXXXXXXX");
+    if (!validatePhone(formData.guardian_phone)) {
+      toast.error("Phone must be in format +254XXXXXXXXX or 07XXXXXXXX");
       return;
     }
 
@@ -114,23 +112,20 @@ export default function LearnerModal({
     try {
       const supabase = getSupabaseClient();
 
-      const learnerData = {
+      const learnerData: LearnerInsert = {
         name: formData.name.trim(),
-        admission_no: formData.admission_no.trim(),
-        class: formData.class,
-        trip: formData.trip,
-        pickup_area: formData.pickup_area,
-        pickup_time: formData.pickup_time,
-        dropoff_area: formData.dropoff_area || null,
-        drop_time: formData.drop_time || null,
-        father_phone: formData.father_phone,
-        mother_phone: formData.mother_phone,
-        route_id: formData.route_id,
-        active: formData.active,
+        grade: formData.grade || null,
+        guardian_name: formData.guardian_name.trim() || null,
+        guardian_phone: formData.guardian_phone.trim(),
+        area: formData.area || null,
+        route_id: formData.route_id || null,
+        trip_type: formData.trip_type,
+        status: formData.status,
       };
 
       if (isEditing && learner) {
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("learners")
           .update(learnerData)
           .eq("id", learner.id);
@@ -138,20 +133,22 @@ export default function LearnerModal({
         if (error) throw error;
         toast.success("Learner updated successfully");
       } else {
-        const { error } = await supabase.from("learners").insert(learnerData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any).from("learners").insert(learnerData);
 
         if (error) throw error;
         toast.success("Learner created successfully");
       }
 
       onSaved();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving learner:", error);
 
-      if (error.code === "23505") {
-        toast.error("A learner with this admission number already exists");
+      const err = error as { code?: string; message?: string };
+      if (err.code === "23505") {
+        toast.error("A learner with this information already exists");
       } else {
-        toast.error(error.message || "Failed to save learner");
+        toast.error(err.message || "Failed to save learner");
       }
     } finally {
       setLoading(false);
@@ -167,7 +164,7 @@ export default function LearnerModal({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal-content max-w-3xl"
+        className="modal-content max-w-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
@@ -181,50 +178,30 @@ export default function LearnerModal({
 
         <form onSubmit={handleSubmit}>
           <div className="modal-body space-y-6">
-            {/* Name and Admission */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">
-                  Learner Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter full name"
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  Admission Number <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="admission_no"
-                  value={formData.admission_no}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., 2026001"
-                  className="form-input"
-                />
-              </div>
+            {/* Name */}
+            <div className="form-group">
+              <label className="form-label">
+                Learner Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                placeholder="Enter full name"
+                className="form-input"
+              />
             </div>
 
-            {/* Class, Trip, Route */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Grade and Route */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="form-group">
-                <label className="form-label">
-                  Grade/Class <span className="text-red-500">*</span>
-                </label>
+                <label className="form-label">Grade/Class</label>
                 <select
-                  name="class"
-                  value={formData.class}
+                  name="grade"
+                  value={formData.grade}
                   onChange={handleChange}
-                  required
                   className="form-input"
                 >
                   <option value="">Select grade</option>
@@ -233,23 +210,6 @@ export default function LearnerModal({
                       {grade}
                     </option>
                   ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  Trip <span className="text-red-500">*</span>
-                </label>
-                <select
-                  name="trip"
-                  value={formData.trip}
-                  onChange={handleChange}
-                  required
-                  className="form-input"
-                >
-                  <option value={1}>Trip 1</option>
-                  <option value={2}>Trip 2</option>
-                  <option value={3}>Trip 3</option>
                 </select>
               </div>
 
@@ -275,17 +235,14 @@ export default function LearnerModal({
               </div>
             </div>
 
-            {/* Pickup Info */}
+            {/* Area and Trip Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="form-group">
-                <label className="form-label">
-                  Pickup Area <span className="text-red-500">*</span>
-                </label>
+                <label className="form-label">Pickup Area</label>
                 <select
-                  name="pickup_area"
-                  value={formData.pickup_area}
+                  name="area"
+                  value={formData.area}
                   onChange={handleChange}
-                  required
                   className="form-input"
                 >
                   <option value="">Select area</option>
@@ -298,103 +255,68 @@ export default function LearnerModal({
               </div>
 
               <div className="form-group">
-                <label className="form-label">
-                  Pickup Time <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="time"
-                  name="pickup_time"
-                  value={formData.pickup_time}
-                  onChange={handleChange}
-                  required
-                  className="form-input"
-                />
-              </div>
-            </div>
-
-            {/* Dropoff Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Dropoff Area</label>
+                <label className="form-label">Trip Type</label>
                 <select
-                  name="dropoff_area"
-                  value={formData.dropoff_area || ""}
+                  name="trip_type"
+                  value={formData.trip_type}
                   onChange={handleChange}
                   className="form-input"
                 >
-                  <option value="">Same as pickup</option>
-                  {areas.map((area) => (
-                    <option key={area} value={area}>
-                      {area}
+                  {TRIP_TYPES.map((type) => (
+                    <option key={type.value} value={type.value}>
+                      {type.label}
                     </option>
                   ))}
                 </select>
               </div>
-
-              <div className="form-group">
-                <label className="form-label">Dropoff Time</label>
-                <input
-                  type="time"
-                  name="drop_time"
-                  value={formData.drop_time || ""}
-                  onChange={handleChange}
-                  className="form-input"
-                />
-              </div>
             </div>
 
-            {/* Phone Numbers */}
+            {/* Guardian Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="form-group">
-                <label className="form-label">
-                  Father&apos;s Phone <span className="text-red-500">*</span>
-                </label>
+                <label className="form-label">Guardian Name</label>
                 <input
-                  type="tel"
-                  name="father_phone"
-                  value={formData.father_phone}
+                  type="text"
+                  name="guardian_name"
+                  value={formData.guardian_name}
                   onChange={handleChange}
-                  required
-                  placeholder="+254712345678"
+                  placeholder="Parent/Guardian name"
                   className="form-input"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Format: +254XXXXXXXXX
-                </p>
               </div>
 
               <div className="form-group">
                 <label className="form-label">
-                  Mother&apos;s Phone <span className="text-red-500">*</span>
+                  Guardian Phone <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
-                  name="mother_phone"
-                  value={formData.mother_phone}
+                  name="guardian_phone"
+                  value={formData.guardian_phone}
                   onChange={handleChange}
                   required
                   placeholder="+254712345678"
                   className="form-input"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Format: +254XXXXXXXXX
+                  Format: +254XXXXXXXXX or 07XXXXXXXX
                 </p>
               </div>
             </div>
 
-            {/* Active Status (only for editing) */}
+            {/* Status (only for editing) */}
             {isEditing && (
               <div className="form-group">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="active"
-                    checked={formData.active}
-                    onChange={handleChange}
-                    className="w-4 h-4 rounded"
-                  />
-                  <span className="form-label">Active</span>
-                </label>
+                <label className="form-label">Status</label>
+                <select
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                  className="form-input"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
               </div>
             )}
           </div>
@@ -407,7 +329,11 @@ export default function LearnerModal({
             >
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn btn-primary">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn btn-primary"
+            >
               {loading ? (
                 <>
                   <span className="spinner" />

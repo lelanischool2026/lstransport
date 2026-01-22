@@ -42,7 +42,9 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
     if (selectedFile.name.endsWith(".csv")) {
       const text = await selectedFile.text();
       const lines = text.split("\n").filter((line) => line.trim());
-      const headers = lines[0].split(",").map((h) => h.trim().replace(/"/g, ""));
+      const headers = lines[0]
+        .split(",")
+        .map((h) => h.trim().replace(/"/g, ""));
       const data = lines.slice(1, 6).map((line) => {
         const values = line.split(",").map((v) => v.trim().replace(/"/g, ""));
         const row: Record<string, string> = {};
@@ -71,7 +73,9 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
       const lines = text.split("\n").filter((line) => line.trim());
       const headers = lines[0]
         .split(",")
-        .map((h) => h.trim().toLowerCase().replace(/"/g, "").replace(/\s+/g, "_"));
+        .map((h) =>
+          h.trim().toLowerCase().replace(/"/g, "").replace(/\s+/g, "_"),
+        );
       const rows = lines.slice(1).map((line) => {
         const values = line.split(",").map((v) => v.trim().replace(/"/g, ""));
         const row: Record<string, string> = {};
@@ -88,7 +92,7 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
       }
 
       toast.success(
-        `Successfully imported ${rows.length} ${importType === "learners" ? "learners" : "areas"}`
+        `Successfully imported ${rows.length} ${importType === "learners" ? "learners" : "areas"}`,
       );
       onUpdate();
       resetForm();
@@ -102,11 +106,13 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
 
   const importLearners = async (
     supabase: ReturnType<typeof getSupabaseClient>,
-    rows: Record<string, string>[]
+    rows: Record<string, string>[],
   ) => {
     // Get routes for matching
-    const { data: routes } = await supabase.from("routes").select("id, name");
-    const routeMap = new Map(routes?.map((r) => [r.name.toLowerCase(), r.id]) || []);
+    const { data: routes } = await supabase.from("routes").select("id, name") as { data: { id: string; name: string }[] | null };
+    const routeMap = new Map(
+      routes?.map((r) => [r.name.toLowerCase(), r.id]) || [],
+    );
 
     const learners = rows.map((row) => ({
       name:
@@ -138,23 +144,26 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
       throw new Error("No valid learner records found in the file");
     }
 
-    const { error } = await supabase.from("learners").insert(validLearners);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from("learners").insert(validLearners);
     if (error) throw error;
   };
 
   const importAreas = async (
     supabase: ReturnType<typeof getSupabaseClient>,
-    rows: Record<string, string>[]
+    rows: Record<string, string>[],
   ) => {
     // Get routes for matching
-    const { data: routes } = await supabase.from("routes").select("id, name");
-    const routeMap = new Map(routes?.map((r) => [r.name.toLowerCase(), r.id]) || []);
+    const { data: routes } = await supabase.from("routes").select("id, name") as { data: { id: string; name: string }[] | null };
+    const routeMap = new Map(
+      routes?.map((r) => [r.name.toLowerCase(), r.id]) || [],
+    );
 
     const areas = rows
       .map((row, index) => ({
         name: row.name || row.area_name || row.area || "",
         route_id: routeMap.get(
-          (row.route || row.route_name || "").toLowerCase()
+          (row.route || row.route_name || "").toLowerCase(),
         ),
         pickup_order:
           parseInt(row.pickup_order || row.order || "") || index + 1,
@@ -163,11 +172,12 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
 
     if (areas.length === 0) {
       throw new Error(
-        "No valid area records found. Make sure route names match existing routes."
+        "No valid area records found. Make sure route names match existing routes.",
       );
     }
 
-    const { error } = await supabase.from("areas").insert(areas);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from("areas").insert(areas);
     if (error) throw error;
   };
 
@@ -332,18 +342,20 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
             {importType === "learners" ? (
               <>
                 <li>
-                  Required columns: <code>name</code>, <code>guardian_phone</code>
+                  Required columns: <code>name</code>,{" "}
+                  <code>guardian_phone</code>
                 </li>
                 <li>
                   Optional: <code>grade</code>, <code>guardian_name</code>,{" "}
                   <code>area</code>, <code>route</code>, <code>trip_type</code>
                 </li>
                 <li>
-                  Phone numbers should include country code (e.g., +254712345678)
+                  Phone numbers should include country code (e.g.,
+                  +254712345678)
                 </li>
                 <li>
-                  Trip type can be: <code>morning</code>, <code>afternoon</code>, or{" "}
-                  <code>both</code>
+                  Trip type can be: <code>morning</code>, <code>afternoon</code>
+                  , or <code>both</code>
                 </li>
                 <li>Route names must match existing routes exactly</li>
               </>

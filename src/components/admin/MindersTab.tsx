@@ -34,13 +34,21 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
 
       const [mindersRes, driversRes, routesRes] = await Promise.all([
         supabase.from("minders").select("*").order("name"),
-        supabase.from("drivers").select("*").eq("status", "active").order("name"),
-        supabase.from("routes").select("*").eq("status", "active").order("name"),
+        supabase
+          .from("drivers")
+          .select("*")
+          .eq("status", "active")
+          .order("name"),
+        supabase
+          .from("routes")
+          .select("*")
+          .eq("status", "active")
+          .order("name"),
       ]);
 
-      setMinders(mindersRes.data || []);
-      setDrivers(driversRes.data || []);
-      setRoutes(routesRes.data || []);
+      setMinders((mindersRes.data || []) as Minder[]);
+      setDrivers((driversRes.data || []) as Driver[]);
+      setRoutes((routesRes.data || []) as Route[]);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load data");
@@ -104,7 +112,8 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
       };
 
       if (editingMinder) {
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("minders")
           .update(minderData)
           .eq("id", editingMinder.id);
@@ -112,7 +121,8 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
         if (error) throw error;
         toast.success("Minder updated successfully");
       } else {
-        const { error } = await supabase.from("minders").insert(minderData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any).from("minders").insert(minderData);
 
         if (error) throw error;
         toast.success("Minder created successfully");
@@ -134,7 +144,8 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
 
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from("minders")
         .delete()
         .eq("id", minder.id);
@@ -284,7 +295,10 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                      setFormData((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
                     }
                     placeholder="+254712345678"
                     className="form-input"

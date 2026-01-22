@@ -37,11 +37,15 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
 
       const [driversRes, routesRes] = await Promise.all([
         supabase.from("drivers").select("*").order("name"),
-        supabase.from("routes").select("*").eq("status", "active").order("name"),
+        supabase
+          .from("routes")
+          .select("*")
+          .eq("status", "active")
+          .order("name"),
       ]);
 
-      setDrivers(driversRes.data || []);
-      setRoutes(routesRes.data || []);
+      setDrivers((driversRes.data || []) as Driver[]);
+      setRoutes((routesRes.data || []) as Route[]);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load data");
@@ -112,7 +116,8 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
 
       if (editingDriver) {
         // Update existing driver
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("drivers")
           .update({
             name: formData.name.trim(),
@@ -128,21 +133,24 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
         toast.success("Driver updated successfully");
       } else {
         // Create auth user first
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: formData.email.trim(),
-          password: formData.password,
-          options: {
-            data: {
-              name: formData.name.trim(),
-              phone: formData.phone,
+        const { data: authData, error: authError } = await supabase.auth.signUp(
+          {
+            email: formData.email.trim(),
+            password: formData.password,
+            options: {
+              data: {
+                name: formData.name.trim(),
+                phone: formData.phone,
+              },
             },
           },
-        });
+        );
 
         if (authError) throw authError;
 
         // Create driver record
-        const { error: driverError } = await supabase.from("drivers").insert({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: driverError } = await (supabase as any).from("drivers").insert({
           user_id: authData.user?.id,
           name: formData.name.trim(),
           email: formData.email.trim(),
@@ -280,7 +288,10 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
                       type="text"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, name: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
                       }
                       placeholder="Full name"
                       className="form-input"
@@ -296,7 +307,10 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
                       type="email"
                       value={formData.email}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, email: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
                       }
                       placeholder="driver@lelani.school"
                       className="form-input"
@@ -315,7 +329,10 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
                       }
                       placeholder="+254712345678"
                       className="form-input"

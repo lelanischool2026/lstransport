@@ -8,15 +8,12 @@ interface PDFConfig {
   settings: SchoolSettings | null;
   columns: {
     name: boolean;
-    admission_no: boolean;
-    class: boolean;
-    trip: boolean;
-    pickup_area: boolean;
-    pickup_time: boolean;
-    dropoff_area: boolean;
-    drop_time: boolean;
-    father_phone: boolean;
-    mother_phone: boolean;
+    grade: boolean;
+    trip_type: boolean;
+    area: boolean;
+    guardian_name: boolean;
+    guardian_phone: boolean;
+    status: boolean;
   };
 }
 
@@ -67,29 +64,23 @@ export async function generatePDF(config: PDFConfig) {
   // Build table columns
   const tableColumns: string[] = ["#"];
   if (columns.name) tableColumns.push("Name");
-  if (columns.admission_no) tableColumns.push("Adm No.");
-  if (columns.class) tableColumns.push("Class");
-  if (columns.trip) tableColumns.push("Trip");
-  if (columns.pickup_area) tableColumns.push("Pickup Area");
-  if (columns.pickup_time) tableColumns.push("Pickup Time");
-  if (columns.dropoff_area) tableColumns.push("Dropoff Area");
-  if (columns.drop_time) tableColumns.push("Dropoff Time");
-  if (columns.father_phone) tableColumns.push("Father Phone");
-  if (columns.mother_phone) tableColumns.push("Mother Phone");
+  if (columns.grade) tableColumns.push("Grade");
+  if (columns.trip_type) tableColumns.push("Trip Type");
+  if (columns.area) tableColumns.push("Area");
+  if (columns.guardian_name) tableColumns.push("Guardian");
+  if (columns.guardian_phone) tableColumns.push("Guardian Phone");
+  if (columns.status) tableColumns.push("Status");
 
   // Build table data
   const tableData = learners.map((learner, index) => {
     const row: (string | number)[] = [index + 1];
     if (columns.name) row.push(learner.name);
-    if (columns.admission_no) row.push(learner.admission_no);
-    if (columns.class) row.push(learner.class);
-    if (columns.trip) row.push(learner.trip);
-    if (columns.pickup_area) row.push(learner.pickup_area);
-    if (columns.pickup_time) row.push(learner.pickup_time);
-    if (columns.dropoff_area) row.push(learner.dropoff_area || "-");
-    if (columns.drop_time) row.push(learner.drop_time || "-");
-    if (columns.father_phone) row.push(learner.father_phone);
-    if (columns.mother_phone) row.push(learner.mother_phone);
+    if (columns.grade) row.push(learner.grade || "-");
+    if (columns.trip_type) row.push(learner.trip_type);
+    if (columns.area) row.push(learner.area || "-");
+    if (columns.guardian_name) row.push(learner.guardian_name || "-");
+    if (columns.guardian_phone) row.push(learner.guardian_phone);
+    if (columns.status) row.push(learner.status);
     return row;
   });
 
@@ -126,7 +117,7 @@ export async function generatePDF(config: PDFConfig) {
       `Generated on ${new Date().toLocaleString()} | Page ${i} of ${pageCount}`,
       pageWidth / 2,
       pageHeight - 5,
-      { align: "center" }
+      { align: "center" },
     );
   }
 

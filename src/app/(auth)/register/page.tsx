@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import type { DriverInsert } from "@/types/database";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -74,14 +75,16 @@ export default function RegisterPage() {
 
       if (authData.user) {
         // Create driver record
-        const { error: driverError } = await supabase.from("drivers").insert({
+        const driverData: DriverInsert = {
           user_id: authData.user.id,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
           role: "driver",
           status: "active",
-        });
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: driverError } = await supabase.from("drivers").insert(driverData as any);
 
         if (driverError) {
           console.error("Driver creation error:", driverError);
@@ -89,7 +92,9 @@ export default function RegisterPage() {
           // This should be handled by the admin
         }
 
-        toast.success("Account created successfully! Please verify your email.");
+        toast.success(
+          "Account created successfully! Please verify your email.",
+        );
         router.push("/login");
       }
     } catch (error) {
@@ -172,9 +177,7 @@ export default function RegisterPage() {
               placeholder="+254712345678"
               className="form-input"
             />
-            <p className="text-xs text-gray-500 mt-1">
-              Format: +254XXXXXXXXX
-            </p>
+            <p className="text-xs text-gray-500 mt-1">Format: +254XXXXXXXXX</p>
           </div>
 
           <div className="form-group">

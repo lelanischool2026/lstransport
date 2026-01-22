@@ -39,7 +39,7 @@ export default function RoutesTab({ onUpdate }: RoutesTabProps) {
         .order("name");
 
       if (error) throw error;
-      setRoutes(data || []);
+      setRoutes((data || []) as Route[]);
     } catch (error) {
       console.error("Error loading routes:", error);
       toast.error("Failed to load routes");
@@ -117,7 +117,8 @@ export default function RoutesTab({ onUpdate }: RoutesTabProps) {
       };
 
       if (editingRoute) {
-        const { error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any)
           .from("routes")
           .update(routeData)
           .eq("id", editingRoute.id);
@@ -125,7 +126,8 @@ export default function RoutesTab({ onUpdate }: RoutesTabProps) {
         if (error) throw error;
         toast.success("Route updated successfully");
       } else {
-        const { error } = await supabase.from("routes").insert(routeData);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error } = await (supabase as any).from("routes").insert(routeData);
 
         if (error) throw error;
         toast.success("Route created successfully");
@@ -147,7 +149,8 @@ export default function RoutesTab({ onUpdate }: RoutesTabProps) {
 
     try {
       const supabase = getSupabaseClient();
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from("routes")
         .delete()
         .eq("id", route.id);
@@ -289,7 +292,10 @@ export default function RoutesTab({ onUpdate }: RoutesTabProps) {
                       type="text"
                       value={formData.name}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, name: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
                       }
                       placeholder="e.g., Route A"
                       className="form-input"
@@ -320,7 +326,10 @@ export default function RoutesTab({ onUpdate }: RoutesTabProps) {
                     <select
                       value={formData.term}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, term: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          term: e.target.value,
+                        }))
                       }
                       className="form-input"
                     >
