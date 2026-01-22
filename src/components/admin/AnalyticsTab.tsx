@@ -95,7 +95,7 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
   const capacityData = routes.map((route) => {
     const vehicle = vehicles.find((v) => v.reg_number === route.vehicle_no);
     const routeLearners = learners.filter(
-      (l) => l.route_id === route.id && l.active
+      (l) => l.route_id === route.id && l.active,
     );
     const capacity = vehicle?.capacity || 0;
     const count = routeLearners.length;
@@ -106,15 +106,32 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
       learners: count,
       capacity,
       utilization,
-      fill: utilization > 100 ? COLORS.danger : utilization > 80 ? COLORS.warning : COLORS.success,
+      fill:
+        utilization > 100
+          ? COLORS.danger
+          : utilization > 80
+            ? COLORS.warning
+            : COLORS.success,
     };
   });
 
   // Trip distribution
   const tripData = [
-    { name: "Trip 1", value: learners.filter((l) => l.trip === 1 && l.active).length, fill: COLORS.primary },
-    { name: "Trip 2", value: learners.filter((l) => l.trip === 2 && l.active).length, fill: COLORS.secondary },
-    { name: "Trip 3", value: learners.filter((l) => l.trip === 3 && l.active).length, fill: COLORS.info },
+    {
+      name: "Trip 1",
+      value: learners.filter((l) => l.trip === 1 && l.active).length,
+      fill: COLORS.primary,
+    },
+    {
+      name: "Trip 2",
+      value: learners.filter((l) => l.trip === 2 && l.active).length,
+      fill: COLORS.secondary,
+    },
+    {
+      name: "Trip 3",
+      value: learners.filter((l) => l.trip === 3 && l.active).length,
+      fill: COLORS.info,
+    },
   ];
 
   // Status distribution
@@ -149,34 +166,48 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
 
   // Staff coverage
   const routesWithDriver = routes.filter((r) =>
-    drivers.some((d) => d.route_id === r.id)
+    drivers.some((d) => d.route_id === r.id),
   ).length;
   const routesWithMinder = routes.filter((r) =>
-    minders.some((m) => m.route_id === r.id)
+    minders.some((m) => m.route_id === r.id),
   ).length;
 
   const coverageData = [
     { name: "With Driver", value: routesWithDriver, fill: COLORS.success },
-    { name: "No Driver", value: routes.length - routesWithDriver, fill: COLORS.danger },
+    {
+      name: "No Driver",
+      value: routes.length - routesWithDriver,
+      fill: COLORS.danger,
+    },
   ];
 
   // Radial chart for overall stats
   const overallStats = [
     {
       name: "Capacity Utilization",
-      value: capacityData.length > 0
-        ? Math.round(capacityData.reduce((sum, r) => sum + r.utilization, 0) / capacityData.length)
-        : 0,
+      value:
+        capacityData.length > 0
+          ? Math.round(
+              capacityData.reduce((sum, r) => sum + r.utilization, 0) /
+                capacityData.length,
+            )
+          : 0,
       fill: COLORS.primary,
     },
     {
       name: "Driver Coverage",
-      value: routes.length > 0 ? Math.round((routesWithDriver / routes.length) * 100) : 0,
+      value:
+        routes.length > 0
+          ? Math.round((routesWithDriver / routes.length) * 100)
+          : 0,
       fill: COLORS.success,
     },
     {
       name: "Minder Coverage",
-      value: routes.length > 0 ? Math.round((routesWithMinder / routes.length) * 100) : 0,
+      value:
+        routes.length > 0
+          ? Math.round((routesWithMinder / routes.length) * 100)
+          : 0,
       fill: COLORS.info,
     },
   ];
@@ -215,27 +246,39 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
       {/* Quick Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
         <div className="bg-gradient-to-br from-primary-600/20 to-primary-800/20 border border-primary-500/30 rounded-xl p-4">
-          <div className="text-3xl font-bold text-primary-400">{learners.length}</div>
+          <div className="text-3xl font-bold text-primary-400">
+            {learners.length}
+          </div>
           <div className="text-sm text-gray-400">Total Learners</div>
         </div>
         <div className="bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-500/30 rounded-xl p-4">
-          <div className="text-3xl font-bold text-green-400">{activeLearners}</div>
+          <div className="text-3xl font-bold text-green-400">
+            {activeLearners}
+          </div>
           <div className="text-sm text-gray-400">Active</div>
         </div>
         <div className="bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-500/30 rounded-xl p-4">
-          <div className="text-3xl font-bold text-blue-400">{routes.length}</div>
+          <div className="text-3xl font-bold text-blue-400">
+            {routes.length}
+          </div>
           <div className="text-sm text-gray-400">Routes</div>
         </div>
         <div className="bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-500/30 rounded-xl p-4">
-          <div className="text-3xl font-bold text-purple-400">{vehicles.length}</div>
+          <div className="text-3xl font-bold text-purple-400">
+            {vehicles.length}
+          </div>
           <div className="text-sm text-gray-400">Vehicles</div>
         </div>
         <div className="bg-gradient-to-br from-yellow-600/20 to-yellow-800/20 border border-yellow-500/30 rounded-xl p-4">
-          <div className="text-3xl font-bold text-yellow-400">{drivers.length}</div>
+          <div className="text-3xl font-bold text-yellow-400">
+            {drivers.length}
+          </div>
           <div className="text-sm text-gray-400">Drivers</div>
         </div>
         <div className="bg-gradient-to-br from-teal-600/20 to-teal-800/20 border border-teal-500/30 rounded-xl p-4">
-          <div className="text-3xl font-bold text-teal-400">{minders.length}</div>
+          <div className="text-3xl font-bold text-teal-400">
+            {minders.length}
+          </div>
           <div className="text-sm text-gray-400">Minders</div>
         </div>
       </div>
@@ -245,7 +288,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
         {/* Capacity Chart */}
         <div className="bg-gradient-to-br from-dark-800 to-dark-900 border border-dark-700 rounded-xl p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 bg-primary-500/20 rounded-lg flex items-center justify-center">🚐</span>
+            <span className="w-8 h-8 bg-primary-500/20 rounded-lg flex items-center justify-center">
+              🚐
+            </span>
             Route Capacity vs Learners
           </h4>
           <div className="h-72">
@@ -253,7 +298,13 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
               <BarChart data={capacityData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                 <XAxis type="number" stroke="#888" />
-                <YAxis dataKey="name" type="category" width={70} stroke="#888" tick={{ fontSize: 12 }} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={70}
+                  stroke="#888"
+                  tick={{ fontSize: 12 }}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#1a1a2e",
@@ -262,8 +313,18 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
                   }}
                   labelStyle={{ color: "#fff" }}
                 />
-                <Bar dataKey="learners" name="Learners" fill={COLORS.primary} radius={[0, 4, 4, 0]} />
-                <Bar dataKey="capacity" name="Capacity" fill="#444" radius={[0, 4, 4, 0]} />
+                <Bar
+                  dataKey="learners"
+                  name="Learners"
+                  fill={COLORS.primary}
+                  radius={[0, 4, 4, 0]}
+                />
+                <Bar
+                  dataKey="capacity"
+                  name="Capacity"
+                  fill="#444"
+                  radius={[0, 4, 4, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -272,7 +333,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
         {/* Trip Distribution Pie Chart */}
         <div className="bg-gradient-to-br from-dark-800 to-dark-900 border border-dark-700 rounded-xl p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">🚌</span>
+            <span className="w-8 h-8 bg-blue-500/20 rounded-lg flex items-center justify-center">
+              🚌
+            </span>
             Trip Distribution
           </h4>
           <div className="h-72 flex items-center">
@@ -312,7 +375,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
         {/* Active vs Inactive */}
         <div className="bg-gradient-to-br from-dark-800 to-dark-900 border border-dark-700 rounded-xl p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">👥</span>
+            <span className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+              👥
+            </span>
             Learner Status
           </h4>
           <div className="h-56">
@@ -325,7 +390,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
                   innerRadius={40}
                   outerRadius={70}
                   dataKey="value"
-                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
+                  label={({ name, percent }) =>
+                    `${name} ${((percent || 0) * 100).toFixed(0)}%`
+                  }
                 >
                   {statusData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -346,7 +413,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
         {/* Staff Coverage */}
         <div className="bg-gradient-to-br from-dark-800 to-dark-900 border border-dark-700 rounded-xl p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">👨‍✈️</span>
+            <span className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+              👨‍✈️
+            </span>
             Driver Coverage
           </h4>
           <div className="h-56">
@@ -380,7 +449,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
         {/* Overall Health Radial */}
         <div className="bg-gradient-to-br from-dark-800 to-dark-900 border border-dark-700 rounded-xl p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <span className="w-8 h-8 bg-teal-500/20 rounded-lg flex items-center justify-center">📊</span>
+            <span className="w-8 h-8 bg-teal-500/20 rounded-lg flex items-center justify-center">
+              📊
+            </span>
             System Health
           </h4>
           <div className="h-56">
@@ -396,7 +467,11 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
                 endAngle={0}
               >
                 <RadialBar
-                  label={{ position: "insideStart", fill: "#fff", fontSize: 10 }}
+                  label={{
+                    position: "insideStart",
+                    fill: "#fff",
+                    fontSize: 10,
+                  }}
                   background={{ fill: "#333" }}
                   dataKey="value"
                 />
@@ -423,7 +498,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
       {/* Learners by Class Bar Chart */}
       <div className="bg-gradient-to-br from-dark-800 to-dark-900 border border-dark-700 rounded-xl p-6">
         <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">📚</span>
+          <span className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+            📚
+          </span>
           Learners by Class (Top 8)
         </h4>
         <div className="h-72">
@@ -448,7 +525,10 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
               />
               <Bar dataKey="value" name="Learners" radius={[4, 4, 0, 0]}>
                 {classData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -459,7 +539,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
       {/* Top Pickup Areas */}
       <div className="bg-gradient-to-br from-dark-800 to-dark-900 border border-dark-700 rounded-xl p-6">
         <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">📍</span>
+          <span className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
+            📍
+          </span>
           Top Pickup Areas
         </h4>
         <div className="h-80">
@@ -483,7 +565,10 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
               />
               <Bar dataKey="value" name="Learners" radius={[0, 4, 4, 0]}>
                 {areaData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -496,12 +581,16 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
         {/* Over Capacity Alerts */}
         <div className="bg-gradient-to-br from-red-900/20 to-dark-900 border border-red-500/30 rounded-xl p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2 text-red-400">
-            <span className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">⚠️</span>
+            <span className="w-8 h-8 bg-red-500/20 rounded-lg flex items-center justify-center">
+              ⚠️
+            </span>
             Capacity Alerts
           </h4>
           <div className="space-y-3">
             {capacityData.filter((c) => c.utilization > 80).length === 0 ? (
-              <p className="text-gray-400 text-sm">All routes within normal capacity ✓</p>
+              <p className="text-gray-400 text-sm">
+                All routes within normal capacity ✓
+              </p>
             ) : (
               capacityData
                 .filter((c) => c.utilization > 80)
@@ -534,7 +623,9 @@ export default function AnalyticsTab({ onUpdate }: AnalyticsTabProps) {
         {/* Unassigned Resources */}
         <div className="bg-gradient-to-br from-yellow-900/20 to-dark-900 border border-yellow-500/30 rounded-xl p-6">
           <h4 className="text-lg font-semibold mb-4 flex items-center gap-2 text-yellow-400">
-            <span className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">📋</span>
+            <span className="w-8 h-8 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+              📋
+            </span>
             Unassigned Resources
           </h4>
           <div className="space-y-4">

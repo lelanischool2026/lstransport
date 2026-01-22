@@ -66,7 +66,7 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
   const totalPages = Math.ceil(filteredAreas.length / ITEMS_PER_PAGE);
   const paginatedAreas = filteredAreas.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    currentPage * ITEMS_PER_PAGE,
   );
 
   // Reset page when filter changes
@@ -359,21 +359,25 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
               >
                 Previous
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1 rounded text-sm ${
-                    currentPage === page
-                      ? "bg-primary-600 text-white"
-                      : "bg-dark-700 hover:bg-dark-600"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-1 rounded text-sm ${
+                      currentPage === page
+                        ? "bg-primary-600 text-white"
+                        : "bg-dark-700 hover:bg-dark-600"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
               <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
                 disabled={currentPage === totalPages}
                 className="px-3 py-1 rounded bg-dark-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-dark-600"
               >

@@ -78,6 +78,41 @@ export default function LearnersPage() {
     setModalOpen(true);
   };
 
+  const handleTransferLearner = async (learner: Learner) => {
+    const routeOptions = routes.map((r) => `${r.name}`).join("\n");
+    const newRouteName = prompt(
+      `Transfer ${learner.name} to which route?\n\nAvailable routes:\n${routeOptions}\n\nEnter route name:`,
+    );
+
+    if (!newRouteName) return;
+
+    const newRoute = routes.find(
+      (r) => r.name.toLowerCase() === newRouteName.toLowerCase(),
+    );
+
+    if (!newRoute) {
+      toast.error("Route not found. Please enter an exact route name.");
+      return;
+    }
+
+    try {
+      const supabase = getSupabaseClient();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from("learners")
+        .update({ route_id: newRoute.id })
+        .eq("id", learner.id);
+
+      if (error) throw error;
+
+      toast.success(`${learner.name} transferred to ${newRoute.name}`);
+      loadData();
+    } catch (error) {
+      console.error("Error transferring learner:", error);
+      toast.error("Failed to transfer learner");
+    }
+  };
+
   const handleDeleteLearner = async (learner: Learner) => {
     if (!confirm(`Are you sure you want to deactivate ${learner.name}?`)) {
       return;
@@ -167,10 +202,15 @@ export default function LearnersPage() {
     (learner: Learner) => {
       if (!driver) return false;
       if (driver.role === "admin") return true;
+      // Drivers can edit learners on their route OR if they don't have a route assigned yet
+      if (!driver.route_id) return false;
       return learner.route_id === driver.route_id;
     },
     [driver],
   );
+
+  // Check if user is admin for transfer functionality
+  const isAdmin = driver?.role === "admin";
 
   // Get route name by ID
   const getRouteName = (routeId: string | null) => {
@@ -377,6 +417,15 @@ export default function LearnersPage() {
                                 title="Reactivate"
                               >
                                 ♻️
+                              </button>
+                            )}
+                            {isAdmin && (
+                              <button
+                                onClick={() => handleTransferLearner(learner)}
+                                className="p-1.5 text-purple-400 hover:bg-purple-400/10 rounded"
+                                title="Transfer to another route"
+                              >
+                                🔄
                               </button>
                             )}
                           </>

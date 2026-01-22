@@ -52,7 +52,7 @@ export default function RolloverTab({ onUpdate }: RolloverTabProps) {
           `${clearLearners ? "• REMOVE all learner records\n" : ""}` +
           `${archiveCurrent ? "• Archive current term data\n" : ""}` +
           `${resetStats ? "• Reset attendance/trip statistics\n" : ""}` +
-          `\nThis action cannot be undone. Are you sure?`
+          `\nThis action cannot be undone. Are you sure?`,
       )
     ) {
       return;
@@ -61,7 +61,7 @@ export default function RolloverTab({ onUpdate }: RolloverTabProps) {
     // Double confirmation for destructive action
     if (
       !confirm(
-        "🚨 FINAL CONFIRMATION 🚨\n\nType OK to proceed with the rollover."
+        "🚨 FINAL CONFIRMATION 🚨\n\nType OK to proceed with the rollover.",
       )
     ) {
       return;
@@ -109,7 +109,7 @@ export default function RolloverTab({ onUpdate }: RolloverTabProps) {
       }
 
       toast.success(
-        `Rollover complete! All routes updated to ${newTerm} ${newYear}`
+        `Rollover complete! All routes updated to ${newTerm} ${newYear}`,
       );
       loadData();
       onUpdate();
@@ -124,7 +124,7 @@ export default function RolloverTab({ onUpdate }: RolloverTabProps) {
   const handleDeactivateGraduates = async () => {
     const graduatingClasses = prompt(
       "Enter graduating class names (comma separated):\n" +
-        "e.g., Grade 8, Class 8, Year 8"
+        "e.g., Grade 8, Class 8, Year 8",
     );
 
     if (!graduatingClasses) return;
@@ -133,7 +133,7 @@ export default function RolloverTab({ onUpdate }: RolloverTabProps) {
 
     if (
       !confirm(
-        `This will deactivate all learners in:\n${classes.join(", ")}\n\nContinue?`
+        `This will deactivate all learners in:\n${classes.join(", ")}\n\nContinue?`,
       )
     ) {
       return;
@@ -168,7 +168,7 @@ export default function RolloverTab({ onUpdate }: RolloverTabProps) {
 
   const handlePromoteLearners = async () => {
     toast.error(
-      "Promotion feature requires grade mapping. Please update learner classes manually or via import."
+      "Promotion feature requires grade mapping. Please update learner classes manually or via import.",
     );
   };
 
@@ -294,7 +294,9 @@ export default function RolloverTab({ onUpdate }: RolloverTabProps) {
               onChange={(e) => setArchiveCurrent(e.target.checked)}
               className="w-4 h-4 rounded"
             />
-            <span className="text-sm">Archive current term data to audit log</span>
+            <span className="text-sm">
+              Archive current term data to audit log
+            </span>
           </label>
 
           <label className="flex items-center gap-2 cursor-pointer">

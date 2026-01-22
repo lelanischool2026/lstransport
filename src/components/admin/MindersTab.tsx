@@ -308,7 +308,9 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
                     maxLength={10}
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Format: 07XXXXXXXX</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Format: 07XXXXXXXX
+                  </p>
                 </div>
 
                 <div className="form-group">

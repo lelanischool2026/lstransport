@@ -154,11 +154,12 @@ export default function GradesTab({ onUpdate }: GradesTabProps) {
       {/* Info Card */}
       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
         <p className="text-sm text-gray-300">
-          💡 <strong>Tip:</strong> Grades defined here will appear as options when adding learners.
-          If you haven't created the grades table yet, run the SQL below in Supabase:
+          💡 <strong>Tip:</strong> Grades defined here will appear as options
+          when adding learners. If you haven't created the grades table yet, run
+          the SQL below in Supabase:
         </p>
         <pre className="bg-dark-800 rounded p-3 mt-2 text-xs overflow-x-auto">
-{`CREATE TABLE IF NOT EXISTS grades (
+          {`CREATE TABLE IF NOT EXISTS grades (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
   "order" INTEGER DEFAULT 1,
