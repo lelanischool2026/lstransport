@@ -38,6 +38,7 @@ export default function ReportsPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [minders, setMinders] = useState<Minder[]>([]);
   const [areas, setAreas] = useState<{ id: string; name: string; route_id: string }[]>([]);
+  const [currentDriver, setCurrentDriver] = useState<Driver | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -73,6 +74,21 @@ export default function ReportsPage() {
     try {
       const supabase = getSupabaseClient();
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Get current driver profile
+      let driverProfile: Driver | null = null;
+      if (user) {
+        const { data: driverData } = await supabase
+          .from("drivers")
+          .select("*")
+          .eq("user_id", user.id)
+          .single();
+        driverProfile = driverData as Driver | null;
+        setCurrentDriver(driverProfile);
+      }
+
       const [routesRes, settingsRes, driversRes, mindersRes, areasRes] = await Promise.all([
         supabase
           .from("routes")
@@ -85,7 +101,17 @@ export default function ReportsPage() {
         supabase.from("areas").select("*").order("name"),
       ]);
 
-      setRoutes(routesRes.data || []);
+      // Filter routes for drivers (not admins)
+      let availableRoutes = routesRes.data || [];
+      if (driverProfile && driverProfile.role !== "admin" && driverProfile.route_id) {
+        availableRoutes = availableRoutes.filter((r: Route) => r.id === driverProfile.route_id);
+        // Auto-select the driver's route
+        if (availableRoutes.length === 1) {
+          setConfig(prev => ({ ...prev, routeId: availableRoutes[0].id }));
+        }
+      }
+
+      setRoutes(availableRoutes);
       setSettings(settingsRes.data);
       setDrivers((driversRes.data || []) as Driver[]);
       setMinders((mindersRes.data || []) as Minder[]);
