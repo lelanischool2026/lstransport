@@ -72,11 +72,11 @@ export default function AdminPage() {
         return;
       }
 
-      const { data: driverData } = await supabase
+      const { data: driverData } = (await supabase
         .from("drivers")
         .select("*")
         .eq("user_id", user.id)
-        .single() as { data: Driver | null };
+        .single()) as { data: Driver | null };
 
       if (!driverData || driverData.role !== "admin") {
         toast.error("Access denied. Admin privileges required.");

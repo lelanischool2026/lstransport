@@ -44,11 +44,11 @@ export default function DashboardPage() {
       if (!user) return;
 
       // Get driver profile
-      const { data: driverData } = await supabase
+      const { data: driverData } = (await supabase
         .from("drivers")
         .select("*")
         .eq("user_id", user.id)
-        .single() as { data: Driver | null };
+        .single()) as { data: Driver | null };
 
       setDriver(driverData);
 
@@ -65,7 +65,9 @@ export default function DashboardPage() {
             supabase.from("learners").select("id, status", { count: "exact" }),
           ]);
 
-        const learnersData = learnersRes.data as { id: string; status: string }[] | null;
+        const learnersData = learnersRes.data as
+          | { id: string; status: string }[]
+          | null;
         const activeLearners =
           learnersData?.filter((l) => l.status === "active").length || 0;
 
@@ -100,8 +102,13 @@ export default function DashboardPage() {
         setRoute(routeRes.data as Route | null);
         setMinder(minderRes.data as Minder | null);
 
-        const learners = (learnersRes.data || []) as { id: string; status: string }[];
-        const activeLearners = learners.filter((l) => l.status === "active").length;
+        const learners = (learnersRes.data || []) as {
+          id: string;
+          status: string;
+        }[];
+        const activeLearners = learners.filter(
+          (l) => l.status === "active",
+        ).length;
 
         setStats({
           totalLearners: learners.length,

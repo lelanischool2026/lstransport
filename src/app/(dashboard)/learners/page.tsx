@@ -38,28 +38,28 @@ export default function LearnersPage() {
 
       if (!user) return;
 
-      const { data: driverData } = await supabase
+      const { data: driverData } = (await supabase
         .from("drivers")
         .select("*")
         .eq("user_id", user.id)
-        .single() as { data: Driver | null };
+        .single()) as { data: Driver | null };
 
       setDriver(driverData);
 
       // Load routes
-      const { data: routesData } = await supabase
+      const { data: routesData } = (await supabase
         .from("routes")
         .select("*")
         .eq("status", "active")
-        .order("name") as { data: Route[] | null };
+        .order("name")) as { data: Route[] | null };
 
       setRoutes(routesData || []);
 
       // Load learners
-      const { data: learnersData } = await supabase
+      const { data: learnersData } = (await supabase
         .from("learners")
         .select("*")
-        .order("name") as { data: Learner[] | null };
+        .order("name")) as { data: Learner[] | null };
 
       setLearners(learnersData || []);
     } catch (error) {

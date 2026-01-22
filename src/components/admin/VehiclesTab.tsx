@@ -107,7 +107,9 @@ export default function VehiclesTab({ onUpdate }: VehiclesTabProps) {
         toast.success("Vehicle updated successfully");
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase as any).from("vehicles").insert(vehicleData);
+        const { error } = await (supabase as any)
+          .from("vehicles")
+          .insert(vehicleData);
 
         if (error) throw error;
         toast.success("Vehicle added successfully");

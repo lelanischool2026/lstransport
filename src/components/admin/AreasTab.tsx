@@ -111,7 +111,9 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
         toast.success("Area updated successfully");
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase as any).from("areas").insert(areaData);
+        const { error } = await (supabase as any)
+          .from("areas")
+          .insert(areaData);
 
         if (error) throw error;
         toast.success("Area created successfully");
@@ -134,7 +136,10 @@ export default function AreasTab({ onUpdate }: AreasTabProps) {
     try {
       const supabase = getSupabaseClient();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any).from("areas").delete().eq("id", area.id);
+      const { error } = await (supabase as any)
+        .from("areas")
+        .delete()
+        .eq("id", area.id);
 
       if (error) throw error;
 

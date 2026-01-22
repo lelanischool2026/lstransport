@@ -122,7 +122,9 @@ export default function MindersTab({ onUpdate }: MindersTabProps) {
         toast.success("Minder updated successfully");
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase as any).from("minders").insert(minderData);
+        const { error } = await (supabase as any)
+          .from("minders")
+          .insert(minderData);
 
         if (error) throw error;
         toast.success("Minder created successfully");

@@ -134,7 +134,9 @@ export default function LearnerModal({
         toast.success("Learner updated successfully");
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase as any).from("learners").insert(learnerData);
+        const { error } = await (supabase as any)
+          .from("learners")
+          .insert(learnerData);
 
         if (error) throw error;
         toast.success("Learner created successfully");

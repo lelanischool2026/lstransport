@@ -123,9 +123,7 @@ export default function ReportsPage() {
       filtered = filtered.filter((l) => l.trip_type === config.tripFilter);
     }
     if (config.pickupAreaFilter) {
-      filtered = filtered.filter(
-        (l) => l.area === config.pickupAreaFilter,
-      );
+      filtered = filtered.filter((l) => l.area === config.pickupAreaFilter);
     }
     if (config.classFilter) {
       filtered = filtered.filter((l) => l.grade === config.classFilter);
@@ -143,7 +141,9 @@ export default function ReportsPage() {
         filtered.sort((a, b) => (a.area || "").localeCompare(b.area || ""));
         break;
       case "trip":
-        filtered.sort((a, b) => (a.trip_type || "").localeCompare(b.trip_type || ""));
+        filtered.sort((a, b) =>
+          (a.trip_type || "").localeCompare(b.trip_type || ""),
+        );
         break;
       default:
         filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -195,8 +195,12 @@ export default function ReportsPage() {
   };
 
   // Get unique values for filters
-  const uniqueAreas = [...new Set(learners.map((l) => l.area).filter((a): a is string => !!a))].sort();
-  const uniqueClasses = [...new Set(learners.map((l) => l.grade).filter((g): g is string => !!g))].sort();
+  const uniqueAreas = [
+    ...new Set(learners.map((l) => l.area).filter((a): a is string => !!a)),
+  ].sort();
+  const uniqueClasses = [
+    ...new Set(learners.map((l) => l.grade).filter((g): g is string => !!g)),
+  ].sort();
   const filteredCount = getFilteredLearners().length;
 
   if (loading) {

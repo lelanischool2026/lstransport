@@ -84,7 +84,9 @@ export default function RegisterPage() {
           status: "active",
         };
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: driverError } = await supabase.from("drivers").insert(driverData as any);
+        const { error: driverError } = await supabase
+          .from("drivers")
+          .insert(driverData as any);
 
         if (driverError) {
           console.error("Driver creation error:", driverError);
@@ -111,7 +113,7 @@ export default function RegisterPage() {
       <div className="text-center mb-6">
         <div className="w-20 h-20 mx-auto mb-3 relative">
           <Image
-            src="/lslogo.png"
+            src="/lslogo.webp"
             alt="Lelani School Logo"
             width={80}
             height={80}

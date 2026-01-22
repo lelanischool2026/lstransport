@@ -33,10 +33,10 @@ export default function SchoolSettingsTab({
   const loadSettings = async () => {
     try {
       const supabase = getSupabaseClient();
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("school_settings")
         .select("*")
-        .single() as { data: SchoolSettings | null; error: any };
+        .single()) as { data: SchoolSettings | null; error: any };
 
       if (error && error.code !== "PGRST116") throw error;
 

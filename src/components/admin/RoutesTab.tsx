@@ -127,7 +127,9 @@ export default function RoutesTab({ onUpdate }: RoutesTabProps) {
         toast.success("Route updated successfully");
       } else {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error } = await (supabase as any).from("routes").insert(routeData);
+        const { error } = await (supabase as any)
+          .from("routes")
+          .insert(routeData);
 
         if (error) throw error;
         toast.success("Route created successfully");

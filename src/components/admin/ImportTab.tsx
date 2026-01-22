@@ -109,7 +109,9 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
     rows: Record<string, string>[],
   ) => {
     // Get routes for matching
-    const { data: routes } = await supabase.from("routes").select("id, name") as { data: { id: string; name: string }[] | null };
+    const { data: routes } = (await supabase
+      .from("routes")
+      .select("id, name")) as { data: { id: string; name: string }[] | null };
     const routeMap = new Map(
       routes?.map((r) => [r.name.toLowerCase(), r.id]) || [],
     );
@@ -145,7 +147,9 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from("learners").insert(validLearners);
+    const { error } = await (supabase as any)
+      .from("learners")
+      .insert(validLearners);
     if (error) throw error;
   };
 
@@ -154,7 +158,9 @@ export default function ImportTab({ onUpdate }: ImportTabProps) {
     rows: Record<string, string>[],
   ) => {
     // Get routes for matching
-    const { data: routes } = await supabase.from("routes").select("id, name") as { data: { id: string; name: string }[] | null };
+    const { data: routes } = (await supabase
+      .from("routes")
+      .select("id, name")) as { data: { id: string; name: string }[] | null };
     const routeMap = new Map(
       routes?.map((r) => [r.name.toLowerCase(), r.id]) || [],
     );

@@ -73,7 +73,7 @@ export default function DashboardLayout({
             {/* Logo */}
             <Link href="/dashboard" className="flex items-center gap-3">
               <Image
-                src="/lslogo.png"
+                src="/lslogo.webp"
                 alt="Lelani School"
                 width={40}
                 height={40}

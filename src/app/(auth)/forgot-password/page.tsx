@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
       <div className="text-center mb-8">
         <div className="w-24 h-24 mx-auto mb-4 relative">
           <Image
-            src="/lslogo.png"
+            src="/lslogo.webp"
             alt="Lelani School Logo"
             width={96}
             height={96}

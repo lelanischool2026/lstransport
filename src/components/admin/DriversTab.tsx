@@ -150,15 +150,17 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
 
         // Create driver record
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: driverError } = await (supabase as any).from("drivers").insert({
-          user_id: authData.user?.id,
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone,
-          route_id: formData.route_id || null,
-          role: formData.role,
-          status: formData.status,
-        });
+        const { error: driverError } = await (supabase as any)
+          .from("drivers")
+          .insert({
+            user_id: authData.user?.id,
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone,
+            route_id: formData.route_id || null,
+            role: formData.role,
+            status: formData.status,
+          });
 
         if (driverError) throw driverError;
         toast.success("Driver created successfully");
