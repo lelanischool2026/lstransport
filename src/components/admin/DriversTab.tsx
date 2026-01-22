@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import type { Driver, Route } from "@/types/database";
+import type { Driver, Route, Vehicle } from "@/types/database";
 
 interface DriversTabProps {
   onUpdate: () => void;
@@ -12,6 +12,7 @@ interface DriversTabProps {
 export default function DriversTab({ onUpdate }: DriversTabProps) {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
@@ -35,17 +36,19 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
     try {
       const supabase = getSupabaseClient();
 
-      const [driversRes, routesRes] = await Promise.all([
+      const [driversRes, routesRes, vehiclesRes] = await Promise.all([
         supabase.from("drivers").select("*").order("name"),
         supabase
           .from("routes")
           .select("*")
           .eq("status", "active")
           .order("name"),
+        supabase.from("vehicles").select("*").order("registration_no"),
       ]);
 
       setDrivers((driversRes.data || []) as Driver[]);
       setRoutes((routesRes.data || []) as Route[]);
+      setVehicles((vehiclesRes.data || []) as Vehicle[]);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Failed to load data");
@@ -141,6 +144,13 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
     return route?.name || "-";
   };
 
+  const getVehicleForRoute = (routeId: string | null) => {
+    if (!routeId) return "-";
+    const route = routes.find((r) => r.id === routeId);
+    if (!route || !route.vehicle_no) return "-";
+    return route.vehicle_no;
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -166,6 +176,7 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Route</th>
+                <th>Vehicle</th>
                 <th>Role</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -174,7 +185,7 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
             <tbody>
               {drivers.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-gray-400">
+                  <td colSpan={8} className="text-center py-8 text-gray-400">
                     No drivers found. Add your first driver to get started.
                   </td>
                 </tr>
@@ -185,6 +196,7 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
                     <td>{driver.email}</td>
                     <td>{driver.phone}</td>
                     <td>{getRouteName(driver.route_id)}</td>
+                    <td>{getVehicleForRoute(driver.route_id)}</td>
                     <td>
                       <span
                         className={`badge ${driver.role === "admin" ? "badge-warning" : "badge-info"}`}
@@ -291,7 +303,7 @@ export default function DriversTab({ onUpdate }: DriversTabProps) {
                       <option value="">No route</option>
                       {routes.map((route) => (
                         <option key={route.id} value={route.id}>
-                          {route.name}
+                          {route.name} {route.vehicle_no ? `(${route.vehicle_no})` : ""}
                         </option>
                       ))}
                     </select>
